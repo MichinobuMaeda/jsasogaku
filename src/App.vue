@@ -30,6 +30,7 @@
         <Loading v-if="$store.state.site.page === 'loading'"/>
         <SignIn v-if="$store.state.site.page === 'signIn'"/>
         <MainForm v-if="$store.state.site.page === 'mainForm'"/>
+        <RawJson v-if="$store.state.site.page === 'rawJson'"/>
         <debug v-if="$store.state.site.page === 'debug'"/>
       </v-container>
     </v-content>
@@ -56,6 +57,24 @@
             <v-list-tile-title>サインアウト</v-list-tile-title>
           </v-list-tile-content>
         </v-list-tile>
+        <div
+          v-show="$store.state.me && $store.state.accounts[$store.state.me.uid] && $store.state.accounts[$store.state.me.uid].admin"
+        >
+          <v-subheader>管理者メニュー</v-subheader>
+          <v-list-tile
+            value="true"
+            @click="rawJsonOnOff"
+          >
+            <v-list-tile-action>
+              <v-icon>find_in_page</v-icon>
+            </v-list-tile-action>
+            <v-list-tile-content>
+              <v-list-tile-title>{{
+                $store.state.site.page === 'rawJson' ? 'Raw json Off' : 'Raw json On'
+              }}</v-list-tile-title>
+            </v-list-tile-content>
+          </v-list-tile>
+        </div>
         <v-list-tile
           value="true"
           @click="debugOnOff"
@@ -132,6 +151,7 @@ h4 {
 import Loading from './components/Loading'
 import SignIn from './components/SignIn'
 import MainForm from './components/MainForm'
+import RawJson from './components/RawJson'
 import Debug from './components/Debug'
 
 export default {
@@ -157,6 +177,15 @@ export default {
         this.rightDrawer = false
       })
     },
+    rawJsonOnOff () {
+      if (this.$store.state.site.page !== 'rawJson') {
+        this.$store.commit('setPage', 'rawJson')
+      } else {
+        this.$store.commit('backPage')
+      }
+      this.rightDrawer = false
+      window.scrollTo({top: 0})
+    },
     debugOnOff () {
       if (this.$store.state.site.page !== 'debug') {
         this.$store.commit('setPage', 'debug')
@@ -164,6 +193,7 @@ export default {
         this.$store.commit('backPage')
       }
       this.rightDrawer = false
+      window.scrollTo({top: 0})
     }
   },
   name: 'App',
@@ -171,6 +201,7 @@ export default {
     Loading,
     SignIn,
     MainForm,
+    RawJson,
     Debug
   }
 }

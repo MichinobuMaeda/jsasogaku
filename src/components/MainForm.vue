@@ -400,10 +400,7 @@ export default {
             }
           } finally {
             this.personEdit = false
-            window.scrollTo({
-              top: 0,
-              behavior: 'smooth'
-            })
+            window.scrollTo({top: 0, behavior: 'smooth'})
           }
         })
       }

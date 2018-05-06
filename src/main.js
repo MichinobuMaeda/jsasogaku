@@ -37,6 +37,7 @@ const store = new Vuex.Store({
       if (page && state.site.page !== page) {
         let prev = (
           state.site.page === 'loading' ||
+          state.site.page === 'rawJson' ||
           (
             state.site.prev.length &&
             state.site.prev[state.site.prev.length - 1] !== state.site.page
@@ -312,11 +313,13 @@ const showPage = async () => {
         showMainForm(store)
       })
       if (account.data().admin) {
+        console.log(account.data().admin)
         db.collection('accounts').onSnapshot(querySnapshot => {
           store.commit('setAccounts', querySnapshot)
         })
         showMainForm(store)
       } else {
+        console.log(account.data().admin)
         store.commit('setAccount', account)
         showMainForm(store)
       }

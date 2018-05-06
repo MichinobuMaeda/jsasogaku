@@ -5,7 +5,7 @@
         <v-icon dark>clear</v-icon>
       </v-btn>
     </div>
-    <h2><v-icon dark>find_in_page</v-icon> store.state</h2>
+    <h2><v-icon dark>find_in_page</v-icon> Raw json</h2>
     <pre>{{ state }}</pre>
   </div>
 </template>
@@ -13,9 +13,21 @@
 <script>
 export default {
   data () {
-    let {firebase, ...obj} = this.$store.state
+    let {
+      memberships,
+      branches,
+      events,
+      accounts,
+      users
+    } = this.$store.state
     return {
-      state: JSON.stringify(obj, true, 2)
+      state: JSON.stringify({
+        memberships,
+        branches,
+        events,
+        accounts,
+        users
+      }, true, 2)
     }
   },
   methods: {
