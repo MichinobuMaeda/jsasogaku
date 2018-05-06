@@ -1,0 +1,35 @@
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAdmin() {
+			return get(/databases/$(database)/documents/accounts/$(request.auth.uid)).data.admin == true;
+    }
+    match /resources/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /branches/{document=**} {
+      allow read: if request.auth.uid != null;
+      allow write: if isAdmin();
+    }
+    match /memberships/{document=**} {
+      allow read: if request.auth.uid != null;
+      allow write: if isAdmin();
+    }
+    match /events/{document=**} {
+      allow read: if request.auth.uid != null;
+      allow write: if isAdmin();
+    }
+    match /counters/{document=**} {
+      allow read, update: if request.auth.uid != null;
+      allow create, delete: if isAdmin();
+    }
+    match /accounts/{userId} {
+      allow read, update, delete: if request.auth.uid == userId || isAdmin();
+      allow create: if request.auth.uid != null;
+    }
+    match /users/{document=**} {
+      allow read, update, delete: if request.auth.uid == resource.data.uid || isAdmin();
+      allow create: if request.auth.uid != null;
+    }
+  }
+}
