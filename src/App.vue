@@ -3,9 +3,9 @@
     <v-toolbar
       color="grey lighten-2"
       app
-      v-if="$store.state.site.page !== 'loading'"
+      v-if="page !== 'loading'"
     >
-      <v-toolbar-title v-text="$store.state.resources.resSiteTitle"></v-toolbar-title>
+      <v-toolbar-title v-text="res.titleSite"></v-toolbar-title>
       <v-spacer></v-spacer>
       <v-btn icon @click.stop="rightDrawer = !rightDrawer">
         <v-icon>menu</v-icon>
@@ -15,23 +15,23 @@
       <v-container fluid>
         <div
           id="sign-in-as"
-          v-if="$store.state.me.email &&
-                $store.state.site.page !== 'loading'"
+          v-if="me.email &&
+                page !== 'loading'"
         >
-          <v-icon>account_circle</v-icon> {{ $store.state.me.email }}
+          <v-icon>account_circle</v-icon> {{ me.email }}
         </div>
         <div
           id="announcement"
-          v-if="$store.state.resources.resAnnouncement &&
-                $store.state.site.page !== 'loading'"
+          v-if="res.alert &&
+                page !== 'loading'"
         >
-          {{ $store.state.resources.resAnnouncement }}
+          {{ res.alert }}
         </div>
-        <Loading v-if="$store.state.site.page === 'loading'"/>
-        <SignIn v-if="$store.state.site.page === 'signIn'"/>
-        <MainForm v-if="$store.state.site.page === 'mainForm'"/>
-        <RawJson v-if="$store.state.site.page === 'rawJson'"/>
-        <debug v-if="$store.state.site.page === 'debug'"/>
+        <Loading v-if="page === 'loading'"/>
+        <SignIn v-if="page === 'signIn'"/>
+        <MainForm v-if="page === 'mainForm'"/>
+        <RawJson v-if="page === 'rawJson'"/>
+        <debug v-if="page === 'debug'"/>
       </v-container>
     </v-content>
     <v-navigation-drawer
@@ -46,9 +46,9 @@
         <v-list-tile
           value="true"
           @click="signOut"
-          :disabled="$store.state.site.page === 'loading' ||
-                     $store.state.site.page === 'signIn' || 
-                     $store.state.site.page === 'debug'"
+          :disabled="page === 'loading' ||
+                     page === 'signIn' || 
+                     page === 'debug'"
         >
           <v-list-tile-action>
             <v-icon>power_settings_new</v-icon>
@@ -58,7 +58,7 @@
           </v-list-tile-content>
         </v-list-tile>
         <div
-          v-show="$store.state.me && $store.state.accounts[$store.state.me.uid] && $store.state.accounts[$store.state.me.uid].admin"
+          v-show="me && accounts[me.uid] && accounts[me.uid].admin"
         >
           <v-subheader>管理者メニュー</v-subheader>
           <v-list-tile
@@ -70,7 +70,7 @@
             </v-list-tile-action>
             <v-list-tile-content>
               <v-list-tile-title>{{
-                $store.state.site.page === 'rawJson' ? 'Raw json Off' : 'Raw json On'
+                page === 'rawJson' ? 'Raw json Off' : 'Raw json On'
               }}</v-list-tile-title>
             </v-list-tile-content>
           </v-list-tile>
@@ -78,14 +78,14 @@
         <v-list-tile
           value="true"
           @click="debugOnOff"
-          v-show="$store.state.site.nodeEnv === 'development'"
+          v-show="nodeEnv === 'development'"
         >
           <v-list-tile-action>
             <v-icon>bug_report</v-icon>
           </v-list-tile-action>
           <v-list-tile-content>
             <v-list-tile-title>{{
-              $store.state.site.page === 'debug' ? 'Debug Off' : 'Debug On'
+              page === 'debug' ? 'Debug Off' : 'Debug On'
             }}</v-list-tile-title>
           </v-list-tile-content>
         </v-list-tile>
@@ -95,13 +95,13 @@
       color="grey lighten-2"
       :fixed="trye"
       app
-      v-if="$store.state.site.page !== 'loading'"
+      v-if="page !== 'loading'"
     >
       <span id="copyright">
         &copy;
-        {{ $store.state.resources.resCopyrightYears }}
-        <a v-bind:href="$store.state.resources.resCopyrightLink" target="_blank">
-          {{ $store.state.resources.resCopyrightHolder }}
+        {{ res.copyrightYears }}
+        <a v-bind:href="res.copyrightLink" target="_blank">
+          {{ res.copyrightHolder }}
         </a>
       .</span>
     </v-footer>
@@ -133,6 +133,10 @@ h4 {
   padding: 1px 4px 1px 4px;
   margin: 8px 0 8px 0;
 }
+.floated_cancel {
+  float: right;
+  padding: 48px 48px 0 0;
+}
 </style>
 
 <style scoped>
@@ -162,9 +166,9 @@ export default {
   },
   methods: {
     signOut () {
-      if (this.$store.state.site.page === 'loading' ||
-          this.$store.state.site.page === 'signIn' ||
-          this.$store.state.site.page === 'debug') {
+      if (this.page === 'loading' ||
+          this.page === 'signIn' ||
+          this.page === 'debug') {
         return
       }
       this.$store.state.firebase.auth().signOut()
@@ -178,7 +182,7 @@ export default {
       })
     },
     rawJsonOnOff () {
-      if (this.$store.state.site.page !== 'rawJson') {
+      if (this.page !== 'rawJson') {
         this.$store.commit('setPage', 'rawJson')
       } else {
         this.$store.commit('backPage')
@@ -187,7 +191,7 @@ export default {
       window.scrollTo({top: 0})
     },
     debugOnOff () {
-      if (this.$store.state.site.page !== 'debug') {
+      if (this.page !== 'debug') {
         this.$store.commit('setPage', 'debug')
       } else {
         this.$store.commit('backPage')
@@ -203,6 +207,23 @@ export default {
     MainForm,
     RawJson,
     Debug
+  },
+  computed: {
+    res () {
+      return this.$store.state.resources
+    },
+    page () {
+      return this.$store.state.site.page
+    },
+    accounts () {
+      return this.$store.state.accounts
+    },
+    me () {
+      return this.$store.state.me
+    },
+    nodeEnv () {
+      return this.$store.state.site.nodeEnv
+    }
   }
 }
 </script>

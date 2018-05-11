@@ -1,7 +1,7 @@
 <template>
   <div>
-    <h2><v-icon dark>account_circle</v-icon> サインイン</h2>
-    <p v-for="(text, index) in $store.state.resources.resSignInGuide" v-bind:key="index">
+    <h2><v-icon dark>account_circle</v-icon> ログイン</h2>
+    <p v-for="(text, index) in res.guideSignIn" v-bind:key="index">
       {{ text }}
     </p>
     <v-form v-model="valid" ref="form">
@@ -21,7 +21,7 @@
       </v-btn>
     </v-form>
     <h2><v-icon dark>message</v-icon> ご案内</h2>
-    <p v-for="(text, index) in $store.state.resources.resSiteGuide" v-bind:key="index">
+    <p v-for="(text, index) in res.guideSite" v-bind:key="index">
       {{ text }}
     </p>
   </div>
@@ -55,6 +55,11 @@ export default {
           window.alert(error)
         })
       }
+    }
+  },
+  computed: {
+    res () {
+      return this.$store.state.resources
     }
   }
 }

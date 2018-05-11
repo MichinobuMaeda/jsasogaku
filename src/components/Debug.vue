@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div style="float: right; padding: 48px 48px 0 0;">
+    <div class="floated_cancel">
       <v-btn fab dark small fixed color="primary" @click="cancel">
         <v-icon dark>clear</v-icon>
       </v-btn>

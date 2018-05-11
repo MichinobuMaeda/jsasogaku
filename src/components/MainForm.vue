@@ -4,17 +4,17 @@
     <v-form
       v-model="personValid"
       ref="person"
-      v-if="personEdit || (!$store.state.site.selectedUser.ver)"
+      v-if="personEdit || (!selectedUser.ver)"
     >
       <v-text-field
         label="氏名"
-        v-model="$store.state.site.selectedUser.name"
+        v-model="selectedUser.name"
         :rules="requiredRules"
         required
       ></v-text-field>
       <v-select
         label="会員種別"
-        v-model="$store.state.site.selectedUser.membership"
+        v-model="selectedUser.membership"
         :rules="requiredRules"
         required
         :items="$store.state.memberships"
@@ -22,7 +22,7 @@
       ></v-select>
       <v-select
         label="所属支部"
-        v-model="$store.state.site.selectedUser.branch"
+        v-model="selectedUser.branch"
         :rules="requiredRules"
         required
         :items="$store.state.branches"
@@ -30,40 +30,40 @@
       ></v-select>
       <v-text-field
         label="郵便番号"
-        v-model="$store.state.site.selectedUser.zip"
+        v-model="selectedUser.zip"
         :rules="zipRules"
         required
       ></v-text-field>
       <v-text-field
         label="住所"
-        v-model="$store.state.site.selectedUser.address"
+        v-model="selectedUser.address"
         :rules="requiredRules"
         required
         multi-line=true
       ></v-text-field>
       <v-text-field
         label="Tel"
-        v-model="$store.state.site.selectedUser.tel"
+        v-model="selectedUser.tel"
         :rules="telRules"
       ></v-text-field>
       <v-text-field
         label="Fax"
-        v-model="$store.state.site.selectedUser.fax"
+        v-model="selectedUser.fax"
         :rules="telRules"
       ></v-text-field>
       <v-text-field
         label="携帯"
-        v-model="$store.state.site.selectedUser.cell"
+        v-model="selectedUser.cell"
         :rules="telRules"
       ></v-text-field>
       <v-text-field
         label="E-mail"
-        v-model="$store.state.site.selectedUser.email"
+        v-model="selectedUser.email"
         :rules="emailRules"
       ></v-text-field>
       <v-text-field
         label="その他（連絡上の注意など）"
-        v-model="$store.state.site.selectedUser.note"
+        v-model="selectedUser.note"
         multi-line=true
       ></v-text-field>
       <v-btn
@@ -74,7 +74,7 @@
         保存
       </v-btn>
       <v-btn
-         v-if="$store.state.site.selectedUser.ver"
+         v-if="selectedUser.ver"
         @click="reset"
       >
         取り消し
@@ -83,45 +83,45 @@
     <div
       v-else
     >
-      <div>{{ $store.state.site.selectedUser.name }}</div>
+      <div>{{ selectedUser.name }}</div>
       <div><v-icon>people_outline</v-icon> {{
         $store.state.memberships.reduce(
-          (ret, cur) => cur.key === $store.state.site.selectedUser.membership ? cur.text : ret,
+          (ret, cur) => cur.key === selectedUser.membership ? cur.text : ret,
           ''
         )
       }}</div>
       <div><v-icon>group</v-icon> {{
         $store.state.branches.reduce(
-        (ret, cur) => cur.key === $store.state.site.selectedUser.branch ? cur.text : ret,
+        (ret, cur) => cur.key === selectedUser.branch ? cur.text : ret,
           ''
         )
       }}</div>
       <v-divider></v-divider>
-      <div>〒{{ $store.state.site.selectedUser.zip }}</div>
+      <div>〒{{ selectedUser.zip }}</div>
       <div
-        v-for="(value, index) in $store.state.site.selectedUser.address.split('\n')"
+        v-for="(value, index) in selectedUser.address.split('\n')"
         v-bind:key="index"
       >
         {{ value }}
       </div>
       <v-divider></v-divider>
-      <div v-if="$store.state.site.selectedUser.tel">
+      <div v-if="selectedUser.tel">
         <v-icon>phone</v-icon>
-        {{ $store.state.site.selectedUser.tel }}
+        {{ selectedUser.tel }}
       </div>
-      <div v-if="$store.state.site.selectedUser.fax">
-        Fax {{ $store.state.site.selectedUser.fax }}
+      <div v-if="selectedUser.fax">
+        Fax {{ selectedUser.fax }}
       </div>
-      <div v-if="$store.state.site.selectedUser.cell">
+      <div v-if="selectedUser.cell">
         <v-icon>phone_android</v-icon>
-        {{ $store.state.site.selectedUser.cell }}
+        {{ selectedUser.cell }}
       </div>
-      <div v-if="$store.state.site.selectedUser.email">
-        <v-icon>email</v-icon> {{ $store.state.site.selectedUser.email }}
+      <div v-if="selectedUser.email">
+        <v-icon>email</v-icon> {{ selectedUser.email }}
       </div>
       <div
-        v-if="$store.state.site.selectedUser.note"
-        v-for="(value, index) in $store.state.site.selectedUser.note.split('\n')"
+        v-if="selectedUser.note"
+        v-for="(value, index) in selectedUser.note.split('\n')"
         v-bind:key="index"
       >
         {{ value || '&nbsp;' }}
@@ -134,7 +134,7 @@
       </v-btn>
       <h2><v-icon dark>assignment</v-icon> 受付内容</h2>
       <h3
-        v-if="!$store.state.site.selectedEvent"
+        v-if="!selectedEvent"
       >
         <v-icon>event_busy</v-icon>
         受付中のイベントはありません。
@@ -144,21 +144,22 @@
       >
         <h3>
           <v-icon dark>event_available</v-icon> 
-          {{ $store.state.site.selectedEvent.name }}
+          {{ selectedEvent.name }}
         </h3>
         <p>
-          {{ $store.state.site.selectedEvent.desc }}
+          {{ selectedEvent.desc }}
         </p>
         <div
-          v-if="$store.state.site.selectedUser.ver"
+          v-if="selectedUser.ver"
         >
           <div
-            v-if="!$store.state.site.selectedUser.events ||
-                  !$store.state.site.selectedUser.events[$store.state.site.selectedEvent.key]"
+            v-if="!selectedUser.events ||
+                  !selectedUserEvent"
           >
             <v-btn
               color="primary"
               @click="getEntryNo"
+              :disabled="disabledGetEntryNo"
             >
               受付登録開始
             </v-btn>
@@ -169,9 +170,7 @@
             <div class="summary">
               受付番号
               <span class="big-number"> {{
-                $store.state.site.selectedUser.events[
-                  $store.state.site.selectedEvent.key
-                ].number
+                selectedUserEvent.number
               }}</span>
             </div>
             <v-form
@@ -179,7 +178,7 @@
               ref="entry"
             >
               <v-radio-group
-                v-model="$store.state.site.selectedUser.events[$store.state.site.selectedEvent.key].entry"
+                v-model="selectedUserEvent.entry"
               >
                 <v-radio
                   label="参加申込"
@@ -191,26 +190,24 @@
                 ></v-radio>
               </v-radio-group>
               <div
-                v-if="$store.state.site.selectedUser.events[$store.state.site.selectedEvent.key].entry"
+                v-if="selectedUserEvent.entry"
               >
                 <div class="summary">
                   諸費用合計
                   <span class="big-number"> ¥{{
-                    $store.state.site.selectedUser.events[
-                      $store.state.site.selectedEvent.key
-                    ].cost.toLocaleString()
+                    selectedUserEvent.cost.toLocaleString()
                   }}-</span>
                 </div>
                 <p>下の「保存」ボタンを押すと諸費用合計を再計算します。</p>
                 <div>会員は、「１日参加」は選択できません。また、会員の予稿集費用は参加費に含まれます。</div>
                 <div
-                  v-for="item in $store.state.site.selectedEvent.items"
+                  v-for="item in selectedEvent.items"
                   v-bind:key="item.key"
                   v-if="item.category === 'GA'"
                 >
                   <v-radio-group
                     v-if="item.list"
-                    v-model="$store.state.site.selectedUser.events[$store.state.site.selectedEvent.key].items[item.key]"
+                    v-model="selectedUserEvent.items[item.key]"
                     :rules="requiredRules"
                   >
                     <v-radio
@@ -225,41 +222,41 @@
                   >
                   <v-checkbox
                     :label="item.key + ': ' + item.name"
-                    v-model="$store.state.site.selectedUser.events[$store.state.site.selectedEvent.key].items[item.key]"
+                    v-model="selectedUserEvent.items[item.key]"
                   ></v-checkbox>
                   </div>
                 </div>
                 <h4>エクスカーション</h4>
                 <div
-                  v-for="item in $store.state.site.selectedEvent.items"
+                  v-for="item in selectedEvent.items"
                   v-bind:key="item.key"
                   v-if="item.category === 'excursion'"
                 >
                   <v-checkbox
                     :label="item.key + ': ' + item.name"
-                    v-model="$store.state.site.selectedUser.events[$store.state.site.selectedEvent.key].items[item.key]"
+                    v-model="selectedUserEvent.items[item.key]"
                   ></v-checkbox>
                 </div>
                 <h4>分科会講演申込</h4>
                 <div>講演を申し込む分科会を選択して、講演の題名を記入して下さい。３個までです。</div>
                 <div>申込数 [ {{
-                  Object.keys($store.state.site.selectedUser.events[$store.state.site.selectedEvent.key].items).reduce(
-                    (ret1, cur1) => $store.state.site.selectedEvent.items.reduce(
+                  Object.keys(selectedUserEvent.items).reduce(
+                    (ret1, cur1) => selectedEvent.items.reduce(
                       (ret2, cur2) => cur2.key === cur1 &&
                         cur2.category === 'lecture' &&
-                        $store.state.site.selectedUser.events[$store.state.site.selectedEvent.key].items[cur1]
+                        selectedUserEvent.items[cur1]
                           ? true : ret2, false
                     ) ? ++ret1 : ret1, 0
                   )
                 }} ]</div>
                 <div
-                  v-for="item in $store.state.site.selectedEvent.items"
+                  v-for="item in selectedEvent.items"
                   v-bind:key="item.key"
                   v-if="item.category === 'lecture'"
                 >
                   <v-text-field
                     :label="item.key + ': ' + item.name"
-                    v-model="$store.state.site.selectedUser.events[$store.state.site.selectedEvent.key].items[item.key]"
+                    v-model="selectedUserEvent.items[item.key]"
                   ></v-text-field>
                 </div>
               </div>
@@ -271,7 +268,7 @@
                 保存
               </v-btn>
               <v-btn
-                v-if="$store.state.site.selectedUser.ver"
+                v-if="selectedUser.ver"
                 @click="reset"
               >
                 取り消し
@@ -308,6 +305,7 @@ export default {
       personEdit: false,
       personValid: false,
       entryValid: false,
+      disabledGetEntryNo: false,
       requiredRules: [
         v => !!v || '入力必須'
       ],
@@ -326,13 +324,13 @@ export default {
   },
   methods: {
     submit () {
-      let {id, ver, ...user} = this.$store.state.site.selectedUser
+      let {id, ver, ...user} = this.selectedUser
       const timestamp = new Date()
       const db = this.$store.state.firebase.firestore()
 
       // 参加費再計算
-      const activeEvent = this.$store.state.site.selectedEvent
-      let userEvent = this.$store.state.site.selectedUser.events[activeEvent.key]
+      const activeEvent = this.selectedEvent
+      let userEvent = this.selectedUser.events[activeEvent.key]
       if (userEvent) {
         userEvent.cost = !userEvent.entry
           ? 0
@@ -341,8 +339,8 @@ export default {
               (ret2, cur2) => ret2 + (cur2.key === cur1
                 ? userEvent.items[cur1]
                   ? Array.isArray(cur2.list)
-                    ? cur2.list[userEvent.items[cur1] - 1][this.$store.state.site.selectedUser.membership] || 0
-                    : (cur2[this.$store.state.site.selectedUser.membership] || 0)
+                    ? cur2.list[userEvent.items[cur1] - 1][this.selectedUser.membership] || 0
+                    : (cur2[this.selectedUser.membership] || 0)
                   : 0
                 : 0)
               , 0
@@ -396,7 +394,7 @@ export default {
               window.location.href = window.location.href
             } else {
               window.alert(error)
-              this.$store.commit('selectUser', this.$store.state.site.selectedUser)
+              this.$store.commit('selectUser', this.selectedUser)
             }
           } finally {
             this.personEdit = false
@@ -406,7 +404,7 @@ export default {
       }
     },
     reset () {
-      this.$store.commit('selectUser', this.$store.state.site.selectedUser)
+      this.$store.commit('selectUser', this.selectedUser)
       this.personEdit = false
     },
     toggleEditPerson () {
@@ -414,12 +412,13 @@ export default {
     },
     getEntryNo () {
       // 受付番号のカウンターを取得する。
+      this.disabledGetEntryNo = true
       const db = this.$store.state.firebase.firestore()
       let docRefCounter = db.collection('counters').doc(
-        this.$store.state.site.selectedEvent.key
+        this.selectedEvent.key
       )
       let docRefUser = db.collection('users').doc(
-        this.$store.state.site.selectedUser.id
+        this.selectedUser.id
       )
       // トランザクションを開始する。
       db.runTransaction(async transaction => {
@@ -435,11 +434,11 @@ export default {
             // 申込情報を保存する。
             await transaction.update(docRefUser, {
               events: {
-                [this.$store.state.site.selectedEvent.key]: {
+                [this.selectedEvent.key]: {
                   number: count,
                   cost: 0,
                   entry: 1,
-                  items: this.$store.state.site.selectedEvent.items.reduce(
+                  items: this.selectedEvent.items.reduce(
                     (ret, cur) => ({...ret, [cur.key]: cur.default}), {}
                   )
                 }
@@ -457,6 +456,18 @@ export default {
           window.alert(error)
         }
       })
+    }
+  },
+  computed: {
+    selectedUser () {
+      return this.$store.state.site.selectedUser
+    },
+    selectedEvent () {
+      return this.$store.state.site.selectedEvent
+    },
+    selectedUserEvent () {
+      return this.$store.state.site.selectedUser
+        .events[this.$store.state.site.selectedEvent.key]
     }
   }
 }

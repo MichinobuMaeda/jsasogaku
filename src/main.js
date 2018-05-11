@@ -15,6 +15,7 @@ Vue.use(Vuetify)
 Vue.config.productionTip = false
 
 const store = new Vuex.Store({
+  // 初期データ
   state: {
     firebase,
     site: {
@@ -22,6 +23,7 @@ const store = new Vuex.Store({
       prev: [],
       selectedUser: {},
       selectedEvent: {},
+      loadingMessage: '... Loading ...',
       nodeEnv: process.env.NODE_ENV
     },
     resources: {},
@@ -33,24 +35,26 @@ const store = new Vuex.Store({
     me: {}
   },
   mutations: {
+    // 表示するページを設定する。
     setPage (state, page) {
       if (page && state.site.page !== page) {
-        let prev = (
-          state.site.page === 'loading' ||
-          state.site.page === 'rawJson' ||
-          (
-            state.site.prev.length &&
-            state.site.prev[state.site.prev.length - 1] !== state.site.page
-          )
-        ) ? state.site.prev
-          : state.site.prev.concat(state.site.page)
         state.site = {
           ...state.site,
-          prev,
+          prev: (
+            // 戻る対象として保存しないページ。
+            state.site.page === 'loading' ||
+            state.site.page === 'rawJson' ||
+            (
+              state.site.prev.length &&
+              state.site.prev[state.site.prev.length - 1] !== state.site.page
+            )
+          ) ? state.site.prev
+            : state.site.prev.concat(state.site.page),
           page
         }
       }
     },
+    // 前のページに戻る。
     backPage (state) {
       let prev = state.site.prev.pop()
       state.site = {
@@ -59,12 +63,14 @@ const store = new Vuex.Store({
         page: prev
       }
     },
+    // コンテンツロード時の表示メッセージ。
     setLoadingMessage (state, msg) {
       state.site = {
         ...state.site,
         loadingMessage: msg
       }
     },
+    // 編集対象のユーザを設定する。
     selectUser (state, user) {
       state.site = {
         ...state.site,
@@ -96,18 +102,21 @@ const store = new Vuex.Store({
         )
       }
     },
+    // 編集対象のイベントを設定する。
     selectEvent (state, event) {
       state.site = {
         ...state.site,
         selectedEvent: event
       }
     },
+    // 表示文字列などのリソースを設定する。
     setResources (state, querySnapshot) {
       state.resources = {}
       querySnapshot.forEach(function (doc) {
         state.resources[doc.id] = doc.data().text
       })
     },
+    // 会員・非会員の種別の選択肢を設定する。
     setMemberships (state, querySnapshot) {
       let arr = []
       querySnapshot.forEach(function (doc) {
@@ -118,6 +127,7 @@ const store = new Vuex.Store({
       })
       state.memberships = orderByKey(arr)
     },
+    // 支部の選択肢を設定する。
     setBranches (state, querySnapshot) {
       let arr = []
       querySnapshot.forEach(function (doc) {
@@ -128,25 +138,7 @@ const store = new Vuex.Store({
       })
       state.branches = orderByKey(arr)
     },
-    setAccounts (state, querySnapshot) {
-      state.accounts = {}
-      querySnapshot.forEach(function (doc) {
-        state.accounts[doc.id] = {
-          admin: doc.data().admin,
-          email: doc.data().email,
-          createdAt: doc.data().createdAt,
-          updatedAt: doc.data().updatedAt
-        }
-      })
-    },
-    setAccount (state, doc) {
-      state.accounts[doc.id] = {
-        admin: doc.data().admin,
-        email: doc.data().email,
-        createdAt: doc.data().createdAt,
-        updatedAt: doc.data().updatedAt
-      }
-    },
+    // イベントの一覧を設定する。
     setEvents (state, querySnapshot) {
       let arr = []
       querySnapshot.forEach(function (doc) {
@@ -171,12 +163,7 @@ const store = new Vuex.Store({
       })
       state.events = orderByKey(arr)
     },
-    setUsers (state, querySnapshot) {
-      state.users = []
-      querySnapshot.forEach(function (doc) {
-        state.users.push(normalizeUserDoc(doc))
-      })
-    },
+    // ユーザ情報を設定する。
     setUser (state, doc) {
       state.users = state.users || []
       state.users = [
@@ -184,6 +171,17 @@ const store = new Vuex.Store({
         ...state.users.filter(user => user.uid !== doc.data().uid)
       ]
     },
+    // アカウントを設定する。
+    setAccount (state, doc) {
+      state.accounts = state.accounts || []
+      state.accounts[doc.id] = {
+        admin: doc.data().admin,
+        email: doc.data().email,
+        createdAt: doc.data().createdAt,
+        updatedAt: doc.data().updatedAt
+      }
+    },
+    // 認証したアカウントを取得する。
     setMe (state, account) {
       if (account) {
         state.me = {
@@ -226,6 +224,11 @@ if (firebase.auth().isSignInWithEmailLink(window.location.href)) {
  * Email Link 認証を実行して元のURLに戻る。
  */
 const confirmSignIn = async () => {
+  const db = firebase.firestore()
+  store.commit('setLoadingMessage', 'データ取得中。しばらくお待ちください。')
+  let querySnapshot = await db.collection('resources').get()
+  store.commit('setResources', querySnapshot)
+  store.commit('setLoadingMessage', '認証処理中')
   try {
     // 認証に利用したメールアドレスを取得する。
     let email = window.localStorage.getItem('emailForSignIn')
@@ -238,6 +241,7 @@ const confirmSignIn = async () => {
       window.localStorage.removeItem('emailForSignIn')
     }
   } catch (error) {
+    store.commit('setLoadingMessage', '認証エラー。やり直してもうまくいかない場合は管理者にお伝えください。')
     window.alert(error)
   } finally {
     // 元のURLに戻る。
@@ -257,51 +261,34 @@ const showPage = async () => {
     // 認証情報無しの場合、
     if (!auth) {
       // データを取得して、 SignIn ページを表示する。
-      db.collection('resources').onSnapshot(querySnapshot => {
-        store.commit('setResources', querySnapshot)
-        showSingIn(store)
-      })
+      store.commit('setLoadingMessage', 'データ取得中。しばらくお待ちください。')
+      // 表示文字列などのリソースを取得する。
+      let querySnapshot = await db.collection('resources').get()
+      store.commit('setResources', querySnapshot)
+      showSingIn(store)
 
     // 認証情報有りの場合、
     } else {
-      // アカウント情報を作成または更新する。
-      const timestamp = new Date()
-      let docRefAccount = db.collection('accounts').doc(store.state.me.uid)
-      let account = await db.runTransaction(async transaction => {
-        let doc = await transaction.get(docRefAccount)
-        // 初回の認証の場合、アカウント情報を作成する。
-        if (!doc.exists) {
-          db.collection('accounts').doc(store.state.me.uid).set({
-            admin: false,
-            email: auth.email,
-            createdAt: timestamp,
-            updatedAt: timestamp
-          })
-
-        // ２回目以降の認証の場合、メールアドレスと認証日時を更新する。
-        } else {
-          transaction.update(docRefAccount, {
-            admin: doc.data().admin,
-            email: auth.email,
-            createdAt: doc.data().createdAt,
-            updatedAt: timestamp
-          })
-        }
-        return doc
-      })
+      // アカウント情報を取得する。
+      const account = await getAuthenticatedAccount(db, store.state.me.uid)
       // データを取得して、 MainForm ページを表示する。
+      store.commit('setLoadingMessage', 'データ取得中。しばらくお待ちください。')
+      // 表示文字列などのリソースを取得する。
       db.collection('resources').onSnapshot(querySnapshot => {
         store.commit('setResources', querySnapshot)
         showMainForm(store)
       })
+      // 会員・非会員の種別の選択肢を取得する。
       db.collection('memberships').onSnapshot(querySnapshot => {
         store.commit('setMemberships', querySnapshot)
         showMainForm(store)
       })
+      // 支部の選択肢を取得する。
       db.collection('branches').onSnapshot(querySnapshot => {
         store.commit('setBranches', querySnapshot)
         showMainForm(store)
       })
+      // イベントの一覧を取得する。
       db.collection('events').onSnapshot(querySnapshot => {
         store.commit('setEvents', querySnapshot)
         store.commit(
@@ -312,32 +299,74 @@ const showPage = async () => {
         )
         showMainForm(store)
       })
+      // 管理者の場合、
       if (account.data().admin) {
-        console.log(account.data().admin)
+        // アカウントの一覧を取得する。
         db.collection('accounts').onSnapshot(querySnapshot => {
-          store.commit('setAccounts', querySnapshot)
+          querySnapshot.forEach(function (doc) {
+            store.commit('setAccount', doc)
+          })
+          showMainForm(store)
         })
-        showMainForm(store)
-      } else {
-        console.log(account.data().admin)
-        store.commit('setAccount', account)
-        showMainForm(store)
-      }
-      const setUsers = querySnapshot => {
-        querySnapshot.forEach(function (doc) {
-          store.commit('setUser', doc)
-        })
-        store.commit('selectUser', store.state.me)
-        showMainForm(store)
-      }
-      if (account.data().admin) {
+        // ユーザ情報の一覧を取得する。
         db.collection('users').onSnapshot(setUsers)
+
+      // 一般参加者の場合、
       } else {
+        // 本人のアカウントを取得する。
+        db.collection('accounts').doc(store.state.me.uid).onSnapshot(doc => {
+          store.commit('setAccount', account)
+          showMainForm(store)
+        })
+        // 本人のユーザ情報の一覧を取得する。
         db.collection('users')
         .where('uid', '==', store.state.me.uid).onSnapshot(setUsers)
       }
     }
   })
+}
+
+/**
+ * Sleep
+ * @param number time
+ */
+const sleep = time => {
+  return new Promise((resolve) => setTimeout(resolve, time))
+}
+
+/**
+ * アカウント情報を取得する。
+ * @param object db
+ * @param string uid
+ */
+const getAuthenticatedAccount = async (db, uid) => {
+  while (true) {
+    try {
+      let account = await db.collection('accounts').doc(store.state.me.uid).get()
+      if (account && account.exists) {
+        console.log(account)
+        return account
+      } else {
+        store.commit('setLoadingMessage', '初回認証処理中。しばらくお待ちください。')
+        sleep(500)
+      }
+    } catch (error) {
+      console.log(error)
+      return
+    }
+  }
+}
+
+/**
+ * ユーザ情報を設定する。
+ * @param object querySnapshot
+ */
+const setUsers = querySnapshot => {
+  querySnapshot.forEach(function (doc) {
+    store.commit('setUser', doc)
+  })
+  store.commit('selectUser', store.state.me)
+  showMainForm(store)
 }
 
 /**
