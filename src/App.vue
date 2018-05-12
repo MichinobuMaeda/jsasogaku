@@ -30,6 +30,7 @@
         <Loading v-if="page === 'loading'"/>
         <SignIn v-if="page === 'signIn'"/>
         <MainForm v-if="page === 'mainForm'"/>
+        <Resource v-if="page === 'resources'"/>
         <RawJson v-if="page === 'rawJson'"/>
         <debug v-if="page === 'debug'"/>
       </v-container>
@@ -54,30 +55,43 @@
             <v-icon>power_settings_new</v-icon>
           </v-list-tile-action>
           <v-list-tile-content>
-            <v-list-tile-title>サインアウト</v-list-tile-title>
+            <v-list-tile-title>{{ res.titleSignOut }}</v-list-tile-title>
           </v-list-tile-content>
         </v-list-tile>
         <div
           v-show="me && accounts[me.uid] && accounts[me.uid].admin"
         >
-          <v-subheader>管理者メニュー</v-subheader>
+          <v-subheader>{{ res.titleAdminMenu }}</v-subheader>
           <v-list-tile
             value="true"
-            @click="rawJsonOnOff"
+            @click="adminPageOnOff('resources')"
+          >
+            <v-list-tile-action>
+              <v-icon>message</v-icon>
+            </v-list-tile-action>
+            <v-list-tile-content>
+              <v-list-tile-title>{{
+                page === 'resources' ? 'Resources Off' : 'Resources'
+              }}</v-list-tile-title>
+            </v-list-tile-content>
+          </v-list-tile>
+          <v-list-tile
+            value="true"
+            @click="adminPageOnOff('rawJson')"
           >
             <v-list-tile-action>
               <v-icon>find_in_page</v-icon>
             </v-list-tile-action>
             <v-list-tile-content>
               <v-list-tile-title>{{
-                page === 'rawJson' ? 'Raw json Off' : 'Raw json On'
+                page === 'rawJson' ? 'Raw json Off' : 'Raw json'
               }}</v-list-tile-title>
             </v-list-tile-content>
           </v-list-tile>
         </div>
         <v-list-tile
           value="true"
-          @click="debugOnOff"
+          @click="adminPageOnOff('debug')"
           v-show="nodeEnv === 'development'"
         >
           <v-list-tile-action>
@@ -85,7 +99,7 @@
           </v-list-tile-action>
           <v-list-tile-content>
             <v-list-tile-title>{{
-              page === 'debug' ? 'Debug Off' : 'Debug On'
+              page === 'debug' ? 'Debug Off' : 'Debug'
             }}</v-list-tile-title>
           </v-list-tile-content>
         </v-list-tile>
@@ -155,6 +169,7 @@ h4 {
 import Loading from './components/Loading'
 import SignIn from './components/SignIn'
 import MainForm from './components/MainForm'
+import Resource from './components/Resource'
 import RawJson from './components/RawJson'
 import Debug from './components/Debug'
 
@@ -181,18 +196,9 @@ export default {
         this.rightDrawer = false
       })
     },
-    rawJsonOnOff () {
-      if (this.page !== 'rawJson') {
-        this.$store.commit('setPage', 'rawJson')
-      } else {
-        this.$store.commit('backPage')
-      }
-      this.rightDrawer = false
-      window.scrollTo({top: 0})
-    },
-    debugOnOff () {
-      if (this.page !== 'debug') {
-        this.$store.commit('setPage', 'debug')
+    adminPageOnOff (page) {
+      if (this.page !== page) {
+        this.$store.commit('setPage', page)
       } else {
         this.$store.commit('backPage')
       }
@@ -205,6 +211,7 @@ export default {
     Loading,
     SignIn,
     MainForm,
+    Resource,
     RawJson,
     Debug
   },

@@ -10,6 +10,13 @@
   </div>
 </template>
 
+<style scoped>
+pre {
+  font-size: 90%;
+}
+</style>
+
+
 <script>
 export default {
   data () {

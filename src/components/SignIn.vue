@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h2><v-icon dark>account_circle</v-icon> ログイン</h2>
+    <h2><v-icon dark>account_circle</v-icon> {{ res.titleSignIn }}</h2>
     <p v-for="(text, index) in res.guideSignIn" v-bind:key="index">
       {{ text }}
     </p>
@@ -11,16 +11,17 @@
         :rules="emailRules"
         required
       ></v-text-field>
-      <p>メールアドレスの綴りに間違いがないことを確認して下さい。</p>
+      <p>{{ res.warningBeforeSignIn }}</p>
       <v-btn
         color="primary"
         @click="submit"
         :disabled="!valid"
       >
-        送信
+        {{ 
+          res.labelSubmitAuthEmail }}
       </v-btn>
     </v-form>
-    <h2><v-icon dark>message</v-icon> ご案内</h2>
+    <h2><v-icon dark>message</v-icon> {{ res.titleSiteGude }}</h2>
     <p v-for="(text, index) in res.guideSite" v-bind:key="index">
       {{ text }}
     </p>
@@ -29,15 +30,18 @@
 
 <script>
 export default {
-  data: () => ({
-    valid: false,
-    email: '',
-    emailRules: [
-      v => !!v || '入力必須',
-      v => /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(v) || '半角英数字 aaaa@bbb.ccc 形式'
-    ],
-    checkbox: false
-  }),
+  data () {
+    return {
+      valid: false,
+      email: '',
+      emailRules: [
+        v => !!v || this.res.validationRequired,
+        v => /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(v) ||
+            this.res.validationEmaiFormat
+      ],
+      checkbox: false
+    }
+  },
   methods: {
     submit () {
       if (this.$refs.form.validate()) {
@@ -46,12 +50,12 @@ export default {
           url: window.location.href,
           handleCodeInApp: true
         })
-        .then(function () {
-          // 認証に利用したメールアドレスを保存する。
+        .then(() => {
+          // Save the email address for auth.
           window.localStorage.setItem('emailForSignIn', email)
-          window.alert('認証用のURLを記載したメールを送信しました。このページは閉じて下さい。')
+          window.alert(this.$store.state.resources.statusSubmittedAuthEmail)
         })
-        .catch(function (error) {
+        .catch(error => {
           window.alert(error)
         })
       }

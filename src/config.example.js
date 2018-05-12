@@ -7,4 +7,10 @@ const firebase = {
   messagingSenderId: '000000000000'
 }
 
-export default {firebase}
+const messages = {
+  loadingApp: 'Loading ...',
+  loadingData: 'Loading stored data.',
+  regAccount: 'Registering the account.'
+}
+
+export default {firebase, messages}

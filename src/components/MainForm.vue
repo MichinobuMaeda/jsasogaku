@@ -1,19 +1,19 @@
 <template>
   <div>
-    <h2><v-icon dark>face</v-icon> 本人情報</h2>
+    <h2><v-icon dark>face</v-icon> {{ res.titleProfile }}</h2>
     <v-form
       v-model="personValid"
       ref="person"
       v-if="personEdit || (!selectedUser.ver)"
     >
       <v-text-field
-        label="氏名"
+        :label="res.labelUserName"
         v-model="selectedUser.name"
         :rules="requiredRules"
         required
       ></v-text-field>
       <v-select
-        label="会員種別"
+        :label="res.labelMembership"
         v-model="selectedUser.membership"
         :rules="requiredRules"
         required
@@ -21,7 +21,7 @@
         item-value="key"
       ></v-select>
       <v-select
-        label="所属支部"
+        :label="res.labelBranch"
         v-model="selectedUser.branch"
         :rules="requiredRules"
         required
@@ -29,40 +29,44 @@
         item-value="key"
       ></v-select>
       <v-text-field
-        label="郵便番号"
+        :label="res.labelZip"
         v-model="selectedUser.zip"
         :rules="zipRules"
         required
       ></v-text-field>
       <v-text-field
-        label="住所"
+        :label="res.labelAddress"
         v-model="selectedUser.address"
         :rules="requiredRules"
         required
         multi-line=true
       ></v-text-field>
       <v-text-field
-        label="Tel"
+        :label="res.labelTel"
         v-model="selectedUser.tel"
         :rules="telRules"
+        type="tel"
       ></v-text-field>
       <v-text-field
-        label="Fax"
+        :label="res.labelFax"
         v-model="selectedUser.fax"
         :rules="telRules"
+        type="tel"
       ></v-text-field>
       <v-text-field
-        label="携帯"
+        :label="res.labelCellPhone"
         v-model="selectedUser.cell"
         :rules="telRules"
+        type="tel"
       ></v-text-field>
       <v-text-field
-        label="E-mail"
+        :label="res.labelEmail"
         v-model="selectedUser.email"
         :rules="emailRules"
+        type="email"
       ></v-text-field>
       <v-text-field
-        label="その他（連絡上の注意など）"
+        :label="res.labelProfileNote"
         v-model="selectedUser.note"
         multi-line=true
       ></v-text-field>
@@ -71,13 +75,13 @@
         @click="submit"
         :disabled="!personValid"
       >
-        保存
+        {{ res.labelSave }}
       </v-btn>
       <v-btn
          v-if="selectedUser.ver"
         @click="reset"
       >
-        取り消し
+        {{ res.labelCancel }}
       </v-btn>
     </v-form> 
     <div
@@ -130,14 +134,14 @@
         color="primary"
         @click="toggleEditPerson"
       >
-        編集
+        {{ res.labelEdit }}
       </v-btn>
-      <h2><v-icon dark>assignment</v-icon> 受付内容</h2>
+      <h2><v-icon dark>assignment</v-icon> {{ res.titleReceiptInformation }}</h2>
       <h3
         v-if="!selectedEvent"
       >
         <v-icon>event_busy</v-icon>
-        受付中のイベントはありません。
+        {{ res.statusNoActiveEvent }}
       </h3>
       <div
         v-else
@@ -158,17 +162,17 @@
           >
             <v-btn
               color="primary"
-              @click="getEntryNo"
-              :disabled="disabledGetEntryNo"
+              @click="getReceiptNo"
+              :disabled="disabledGetReceiptNo"
             >
-              受付登録開始
+              {{ res.labelGetReceiptNo }}
             </v-btn>
           </div>
           <div
             v-else
           >
             <div class="summary">
-              受付番号
+              {{ res.labelReceiptNo }}
               <span class="big-number"> {{
                 selectedUserEvent.number
               }}</span>
@@ -181,11 +185,11 @@
                 v-model="selectedUserEvent.entry"
               >
                 <v-radio
-                  label="参加申込"
+                  :label="res.labelEntryOn"
                   :value="1"
                 ></v-radio>
                 <v-radio
-                  label="参加未定または取り消し"
+                  :label="res.labelEntryOff"
                   :value="0"
                 ></v-radio>
               </v-radio-group>
@@ -193,13 +197,14 @@
                 v-if="selectedUserEvent.entry"
               >
                 <div class="summary">
-                  諸費用合計
+                  {{ res.labelAcceptsSummary }}
                   <span class="big-number"> ¥{{
                     selectedUserEvent.cost.toLocaleString()
                   }}-</span>
                 </div>
-                <p>下の「保存」ボタンを押すと諸費用合計を再計算します。</p>
-                <div>会員は、「１日参加」は選択できません。また、会員の予稿集費用は参加費に含まれます。</div>
+                <div v-for="(text, index) in res.guideEventEntry" v-bind:key="index">
+                  {{ text }}
+                </div>
                 <div
                   v-for="item in selectedEvent.items"
                   v-bind:key="item.key"
@@ -226,7 +231,13 @@
                   ></v-checkbox>
                   </div>
                 </div>
-                <h4>エクスカーション</h4>
+                <div>{{ res.guideEventNote }}</div>
+                <v-text-field
+                  :label="res.labelEventNote"
+                  v-model="selectedUserEvent.note"
+                  multi-line=true
+                ></v-text-field>
+                <h4>{{ res.titleExcursion }}</h4>
                 <div
                   v-for="item in selectedEvent.items"
                   v-bind:key="item.key"
@@ -237,9 +248,9 @@
                     v-model="selectedUserEvent.items[item.key]"
                   ></v-checkbox>
                 </div>
-                <h4>分科会講演申込</h4>
-                <div>講演を申し込む分科会を選択して、講演の題名を記入して下さい。３個までです。</div>
-                <div>申込数 [ {{
+                <h4>{{ res.titleLectureEntry }}</h4>
+                <div>{{ res.guideLectureEntry }}</div>
+                <div>{{ res.labelLectureEntryCount }} [ {{
                   Object.keys(selectedUserEvent.items).reduce(
                     (ret1, cur1) => selectedEvent.items.reduce(
                       (ret2, cur2) => cur2.key === cur1 &&
@@ -265,13 +276,13 @@
                 @click="submit"
                 :disabled="!entryValid"
               >
-                保存
+                {{ res.labelSave }}
               </v-btn>
               <v-btn
                 v-if="selectedUser.ver"
                 @click="reset"
               >
-                取り消し
+                {{ res.labelCancel }}
               </v-btn>
             </v-form>
           </div>
@@ -305,20 +316,20 @@ export default {
       personEdit: false,
       personValid: false,
       entryValid: false,
-      disabledGetEntryNo: false,
+      disabledGetReceiptNo: false,
       requiredRules: [
-        v => !!v || '入力必須'
+        v => !!v || this.res.validationRequired
       ],
       zipRules: [
-        v => !!v || '入力必須',
-        v => /^[-0-9]+$/.test(v) || '半角数字と "-"'
+        v => !!v || this.res.validationRequired,
+        v => /^[-0-9]+$/.test(v) || this.res.validationZipNo
       ],
       telRules: [
-        v => !v || /^[-0-9]*$/.test(v) || '半角数字と "-"'
+        v => !v || /^[-0-9]*$/.test(v) || this.res.validationPhoneNo
       ],
       emailRules: [
         v => !v || /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(v) ||
-             '半角英数字 aaaa@bbb.ccc 形式'
+             this.res.validationEmaiFormat
       ]
     }
   },
@@ -328,7 +339,7 @@ export default {
       const timestamp = new Date()
       const db = this.$store.state.firebase.firestore()
 
-      // 参加費再計算
+      // Recalc the sum.
       const activeEvent = this.selectedEvent
       let userEvent = this.selectedUser.events[activeEvent.key]
       if (userEvent) {
@@ -347,7 +358,7 @@ export default {
             ), 0
           )
       }
-      // 新規追加の場合、
+      // If add the new user data.
       if (!ver) {
         db.collection('users').doc().set({
           ...user,
@@ -357,24 +368,24 @@ export default {
         })
         this.personEdit = false
 
-      // 更新の場合、
+      // If update the user data.
       } else {
-        // Firestore に保存されているユーザ情報を取得する。
+        // Get the saved user date.
         let docRef = db.collection('users').doc(id || 'dummy')
-        // トランザクションを開始する。
+        // Start transaction.
         db.runTransaction(async transaction => {
           try {
             let doc = await transaction.get(docRef)
-            // 存在する場合、
+            // If the user data restored.
             if (doc.exists) {
-              // バージョンが一致しない場合、
+              // If the version of user data is invalid.
               if (doc.data().ver !== ver) {
                 /* eslint-disable no-throw-literal */
-                throw '他のところで更新され、編集内容が競合しています。最新のデータを取得します。'
+                throw this.res.errorConflictUpdated
 
-              // バージョンが一致する場合、
+              // If the version of user data is valid.
               } else {
-                // データを更新する。
+                // Update the user data
                 await transaction.update(docRef, {
                   ...user,
                   ver: ver + 1,
@@ -382,15 +393,15 @@ export default {
                 })
               }
 
-            // 存在しない場合、
+            // If the user data is not exists.
             } else {
               /* eslint-disable no-throw-literal */
-              window.alert('データが削除されているようです。不整合の解消のためにページをリロードします。もう一度入力して下さい。')
+              window.alert(this.res.errorConflictDeleted)
               window.location.href = window.location.href
             }
           } catch (error) {
             if (error.code === 'permission-denied') {
-              window.alert('データが削除されているようです。不整合の解消のためにページをリロードします。もう一度入力して下さい。')
+              window.alert(this.res.errorConflictDeleted)
               window.location.href = window.location.href
             } else {
               window.alert(error)
@@ -410,9 +421,8 @@ export default {
     toggleEditPerson () {
       this.personEdit = !this.personEdit
     },
-    getEntryNo () {
-      // 受付番号のカウンターを取得する。
-      this.disabledGetEntryNo = true
+    getReceiptNo () {
+      this.disabledGetReceiptNo = true
       const db = this.$store.state.firebase.firestore()
       let docRefCounter = db.collection('counters').doc(
         this.selectedEvent.key
@@ -420,18 +430,18 @@ export default {
       let docRefUser = db.collection('users').doc(
         this.selectedUser.id
       )
-      // トランザクションを開始する。
+      // Start transaction.
       db.runTransaction(async transaction => {
         let timestamp = new Date()
         try {
           let docCounter = await transaction.get(docRefCounter)
           let docUser = await transaction.get(docRefUser)
-          // 受付番号のカウンターが存在する場合、
+          // If the receipt number counter is exists,
           if (docCounter.exists) {
-            // 採番する。
+            // Get the new number
             let count = docCounter.data().count + 1
             await transaction.update(docRefCounter, {count})
-            // 申込情報を保存する。
+            // Save the user data.
             await transaction.update(docRefUser, {
               events: {
                 [this.selectedEvent.key]: {
@@ -447,10 +457,10 @@ export default {
               updatedAt: timestamp
             })
 
-          // 受付番号のカウンターが存在しない場合、
+          // If the receipt number counter is not exists,
           } else {
             /* eslint-disable no-throw-literal */
-            throw '受付番号の採番の準備ができていません。しばらくお待ちください。'
+            throw this.res.errorMissReceiptNoCounter
           }
         } catch (error) {
           window.alert(error)
@@ -459,6 +469,9 @@ export default {
     }
   },
   computed: {
+    res () {
+      return this.$store.state.resources
+    },
     selectedUser () {
       return this.$store.state.site.selectedUser
     },
