@@ -3,7 +3,7 @@
     <v-toolbar
       color="grey lighten-2"
       app
-      v-if="page !== 'loading'"
+      v-if="page !== PAGE.LOADING"
     >
       <v-toolbar-title v-text="res.titleSite"></v-toolbar-title>
       <v-spacer></v-spacer>
@@ -16,23 +16,23 @@
         <div
           id="sign-in-as"
           v-if="me.email &&
-                page !== 'loading'"
+                page !== PAGE.LOADING"
         >
           <v-icon>account_circle</v-icon> {{ me.email }}
         </div>
         <div
           id="announcement"
           v-if="res.alert &&
-                page !== 'loading'"
+                page !== PAGE.LOADING"
         >
           {{ res.alert }}
         </div>
-        <Loading v-if="page === 'loading'"/>
-        <SignIn v-if="page === 'signIn'"/>
-        <MainForm v-if="page === 'mainForm'"/>
-        <Resource v-if="page === 'resources'"/>
-        <RawJson v-if="page === 'rawJson'"/>
-        <debug v-if="page === 'debug'"/>
+        <Loading v-if="page === PAGE.LOADING"/>
+        <SignIn v-if="page === PAGE.SIGN_IN"/>
+        <MainForm v-if="page === PAGE.MAIN_FORM"/>
+        <Resource v-if="page === PAGE.RESOURCE"/>
+        <RawJson v-if="page === PAGE.RAW_JSON"/>
+        <debug v-if="page === PAGE.DEBUG"/>
       </v-container>
     </v-content>
     <v-navigation-drawer
@@ -46,10 +46,21 @@
       <v-list>
         <v-list-tile
           value="true"
+          @click="closeMenu"
+        >
+          <v-list-tile-action>
+            <v-icon>close</v-icon>
+          </v-list-tile-action>
+          <v-list-tile-content>
+            <v-list-tile-title>{{ res.titleCloseMenu }}</v-list-tile-title>
+          </v-list-tile-content>
+        </v-list-tile>
+        <v-list-tile
+          value="true"
           @click="signOut"
-          :disabled="page === 'loading' ||
-                     page === 'signIn' || 
-                     page === 'debug'"
+          :disabled="page === PAGE.LOADING ||
+                     page === PAGE.SIGN_IN || 
+                     page === PAGE.DEBUG"
         >
           <v-list-tile-action>
             <v-icon>power_settings_new</v-icon>
@@ -64,34 +75,34 @@
           <v-subheader>{{ res.titleAdminMenu }}</v-subheader>
           <v-list-tile
             value="true"
-            @click="adminPageOnOff('resources')"
+            @click="adminPageOnOff(PAGE.RESOURCE)"
           >
             <v-list-tile-action>
               <v-icon>message</v-icon>
             </v-list-tile-action>
             <v-list-tile-content>
               <v-list-tile-title>{{
-                page === 'resources' ? 'Resources Off' : 'Resources'
+                page === PAGE.RESOURCE ? 'Resources Off' : 'Resources'
               }}</v-list-tile-title>
             </v-list-tile-content>
           </v-list-tile>
           <v-list-tile
             value="true"
-            @click="adminPageOnOff('rawJson')"
+            @click="adminPageOnOff(PAGE.RAW_JSON)"
           >
             <v-list-tile-action>
               <v-icon>find_in_page</v-icon>
             </v-list-tile-action>
             <v-list-tile-content>
               <v-list-tile-title>{{
-                page === 'rawJson' ? 'Raw json Off' : 'Raw json'
+                page === PAGE.RAW_JSON ? 'Raw JSON Off' : 'Raw JSON'
               }}</v-list-tile-title>
             </v-list-tile-content>
           </v-list-tile>
         </div>
         <v-list-tile
           value="true"
-          @click="adminPageOnOff('debug')"
+          @click="adminPageOnOff(PAGE.DEBUG)"
           v-show="nodeEnv === 'development'"
         >
           <v-list-tile-action>
@@ -99,7 +110,7 @@
           </v-list-tile-action>
           <v-list-tile-content>
             <v-list-tile-title>{{
-              page === 'debug' ? 'Debug Off' : 'Debug'
+              page === PAGE.DEBUG ? 'Debug Off' : 'Debug'
             }}</v-list-tile-title>
           </v-list-tile-content>
         </v-list-tile>
@@ -109,7 +120,7 @@
       color="grey lighten-2"
       :fixed="trye"
       app
-      v-if="page !== 'loading'"
+      v-if="page !== PAGE.LOADING"
     >
       <span id="copyright">
         &copy;
@@ -166,6 +177,9 @@ h4 {
 </style>
 
 <script>
+import {
+  PAGE, SET_PAGE, BACK_PAGE
+} from './common'
 import Loading from './components/Loading'
 import SignIn from './components/SignIn'
 import MainForm from './components/MainForm'
@@ -176,14 +190,18 @@ import Debug from './components/Debug'
 export default {
   data () {
     return {
-      rightDrawer: false
+      rightDrawer: false,
+      PAGE
     }
   },
   methods: {
+    closeMenu () {
+      this.rightDrawer = false
+    },
     signOut () {
-      if (this.page === 'loading' ||
-          this.page === 'signIn' ||
-          this.page === 'debug') {
+      if (this.page === PAGE.LOADING ||
+          this.page === PAGE.SIGN_IN ||
+          this.page === PAGE.DEBUG) {
         return
       }
       this.$store.state.firebase.auth().signOut()
@@ -198,9 +216,9 @@ export default {
     },
     adminPageOnOff (page) {
       if (this.page !== page) {
-        this.$store.commit('setPage', page)
+        this.$store.commit(SET_PAGE, page)
       } else {
-        this.$store.commit('backPage')
+        this.$store.commit(BACK_PAGE)
       }
       this.rightDrawer = false
       window.scrollTo({top: 0})

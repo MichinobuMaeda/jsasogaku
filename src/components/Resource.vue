@@ -16,6 +16,7 @@
     <v-btn
       color="primary"
       @click="submit"
+      :disabled="submitted"      
     >
       {{ res.labelSave }}
     </v-btn>
@@ -29,6 +30,8 @@ pre {
 </style>
 
 <script>
+import {BACK_PAGE} from '../common'
+import {onSubmitResources} from '../handlers'
 
 const isArray = arr => Object.prototype.toString.call(arr) === '[object Array]'
 const arrayToText = arr => isArray(arr)
@@ -43,35 +46,20 @@ export default {
         text: arrayToText(this.$store.state.resources[key]),
         org: arrayToText(this.$store.state.resources[key]),
         isArray: isArray(this.$store.state.resources[key])
-      }))
+      })),
+      submitted: false
     }
   },
   methods: {
     cancel () {
-      this.$store.commit('backPage')
+      this.$store.commit(BACK_PAGE)
       window.scrollTo({top: 0})
     },
     submit () {
-      this.list.forEach(item => {
-        if (item.text.trim() !== item.org.trim()) {
-          const db = this.$store.state.firebase.firestore()
-          let docRefRes = db.collection('resources').doc(item.key)
-          // Start transaction.
-          db.runTransaction(async transaction => {
-            try {
-              let docRes = await transaction.get(docRefRes)
-              if (docRes.exists) {
-                let text = item.isArray ? item.text.trim().split('\n') : item.text.trim()
-                await transaction.update(docRefRes, {text})
-              } else {
-                window.alert(this.res.errorConflictDeleted)
-              }
-            } catch (error) {
-              window.alert(error)
-            }
-          })
-        }
-      })
+      this.submitted = true
+      this.$store.commit(BACK_PAGE)
+      window.scrollTo({top: 0})
+      return onSubmitResources(this.$store.state, this.list)
     }
   },
   computed: {

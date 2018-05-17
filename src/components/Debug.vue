@@ -17,6 +17,8 @@ pre {
 </style>
 
 <script>
+import {BACK_PAGE} from '../common'
+
 export default {
   data () {
     let {firebase, ...obj} = this.$store.state
@@ -26,7 +28,7 @@ export default {
   },
   methods: {
     cancel () {
-      this.$store.commit('backPage')
+      this.$store.commit(BACK_PAGE)
       window.scrollTo({top: 0})
     }
   }

@@ -1,5 +1,7 @@
 /src/config.js
 /src/config.production.js
+/admin/keys
+/admin/data
 
 .DS_Store
 node_modules/

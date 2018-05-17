@@ -6,7 +6,8 @@
     </p>
     <v-form v-model="valid" ref="form">
       <v-text-field
-        label="E-mail"
+        id="email"
+        :label="res.labelEmail"
         v-model="email"
         :rules="emailRules"
         required
@@ -15,7 +16,7 @@
       <v-btn
         color="primary"
         @click="submit"
-        :disabled="!valid"
+        :disabled="!valid || submitted"
       >
         {{ 
           res.labelSubmitAuthEmail }}
@@ -29,35 +30,42 @@
 </template>
 
 <script>
+import {
+  EMAIL_FOR_SIGN_IN, REGEX_EMAIL
+} from '../common'
+
 export default {
   data () {
     return {
       valid: false,
+      submitted: false,
       email: '',
       emailRules: [
         v => !!v || this.res.validationRequired,
-        v => /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(v) ||
+        v => REGEX_EMAIL.test(v) ||
             this.res.validationEmaiFormat
       ],
       checkbox: false
     }
   },
   methods: {
-    submit () {
-      if (this.$refs.form.validate()) {
+    async submit () {
+      if (!this.$refs.form.validate()) {
+        return
+      }
+      try {
         let email = this.email
-        return this.$store.state.firebase.auth().sendSignInLinkToEmail(email, {
+        this.submitted = true
+        await this.$store.state.firebase.auth().sendSignInLinkToEmail(email, {
           url: window.location.href,
           handleCodeInApp: true
         })
-        .then(() => {
-          // Save the email address for auth.
-          window.localStorage.setItem('emailForSignIn', email)
-          window.alert(this.$store.state.resources.statusSubmittedAuthEmail)
-        })
-        .catch(error => {
-          window.alert(error)
-        })
+        // Save the email address for auth.
+        window.localStorage.setItem(EMAIL_FOR_SIGN_IN, email)
+        window.alert(this.res.statusSubmittedAuthEmail)
+      } catch (error) {
+        this.submitted = false
+        window.alert(error)
       }
     }
   },

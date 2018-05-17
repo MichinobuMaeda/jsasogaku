@@ -18,6 +18,8 @@ pre {
 
 
 <script>
+import {BACK_PAGE} from '../common'
+
 export default {
   data () {
     let {
@@ -39,7 +41,7 @@ export default {
   },
   methods: {
     cancel () {
-      this.$store.commit('backPage')
+      this.$store.commit(BACK_PAGE)
       window.scrollTo({top: 0})
     }
   }
