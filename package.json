@@ -11,8 +11,8 @@
     "e2e": "echo 'skip: node test/e2e/runner.js'",
     "test": "npm run unit && npm run e2e",
     "lint": "eslint --ext .js,.vue src test/unit/specs test/e2e/specs",
-    "build": "node build/build.js",
-    "deploy": "node build/build.js; mv -f dist/static/robots.txt dist/; mv -f dist/static/favicon.ico dist/; firebase deploy"
+    "build": "node build/build.js; mv -f dist/static/robots.txt dist/; mv -f dist/static/favicon.ico dist/",
+    "deploy": "node build/build.js; firebase deploy"
   },
   "dependencies": {
     "es6-promise": "^4.2.4",
