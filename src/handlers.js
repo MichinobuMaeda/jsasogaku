@@ -35,7 +35,7 @@ export const onSubmitResources = async (state, list) => {
  * @param {object} state Vuex app state.
  */
 export const onSubmitUser = (state) => {
-  let {id, ver, ...user} = state.site.selectedUser
+  let {key, ver, ...user} = state.site.selectedUser
   const timestamp = new Date()
   const db = state.firebase.firestore()
 
@@ -71,7 +71,7 @@ export const onSubmitUser = (state) => {
   // If update the user data.
   } else {
     // Get the saved user date.
-    let docRef = db.collection(DB_USERS).doc(id || 'dummy')
+    let docRef = db.collection(DB_USERS).doc(key || 'dummy')
     // Start transaction.
     db.runTransaction(async transaction => {
       try {
@@ -123,7 +123,7 @@ export const getReceiptNo = (state) => {
     state.site.selectedEvent.key
   )
   let docRefUser = db.collection(DB_USERS).doc(
-    state.site.selectedUser.id
+    state.site.selectedUser.key
   )
   // Start transaction.
   return db.runTransaction(async transaction => {

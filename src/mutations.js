@@ -1,38 +1,15 @@
 import {PAGE} from './common'
 
 /**
- * Do type-casting: a user doc of firestore to a plain object.
- * @param {object} doc the user object
- */
-const normalizeUserDoc = (doc) => {
-  return {
-    id: doc.id,
-    uid: doc.data().uid,
-    name: doc.data().name,
-    membership: doc.data().membership,
-    branch: doc.data().branch,
-    zip: doc.data().zip,
-    address: doc.data().address,
-    tel: doc.data().tel,
-    fax: doc.data().fax,
-    cell: doc.data().cell,
-    email: doc.data().email,
-    note: doc.data().note,
-    events: doc.data().events || {},
-    ver: doc.data().ver,
-    createdAt: doc.data().createdAt,
-    updatedAt: doc.data().updatedAt
-  }
-}
-
-/**
- * Sort by key
+ * Sort by key.
  * @param {array} arr the array of objects with 'key' attribute.
  */
 function orderByKey (arr) {
-  return arr.map((item, i) => item.key).sort().map(key => arr.reduce(
-    (ret, cur) => cur.key === key ? cur : ret, null)
-  )
+  return arr
+    ? arr.map((item, i) => item.key).sort().map(key => arr.reduce(
+      (ret, cur) => cur.key === key ? cur : ret, null)
+    )
+    : null
 }
 
 /**
@@ -98,7 +75,7 @@ const selectUser = (state, user) => {
         }
         : ret,
       {
-        id: null,
+        key: null,
         uid: user ? user.uid : null,
         name: '',
         membership: null,
@@ -212,8 +189,13 @@ const setEvents = (state, querySnapshot) => {
  */
 const setUser = (state, doc) => {
   state.users = state.users || []
+  let user = {
+    key: doc.id,
+    ...doc.data()
+  }
+  user.events = user.events || {}
   state.users = [
-    normalizeUserDoc(doc),
+    user,
     ...state.users.filter(user => user.uid !== doc.data().uid)
   ]
 }
@@ -254,6 +236,7 @@ const setMe = (state, account) => {
 }
 
 export default {
+  orderByKey,
   setPage,
   backPage,
   setLoadingMessage,
