@@ -1,6 +1,10 @@
 language: node_js
 node_js:
+  - "8"
 deploy:
   provider: firebase
   token:
     secure: m03yo1kbbqR2CNMp169B1+F81jd0oHY0Q6RjsGbMP3ROe8ECQapApBjwgwAdY3Cpaf8vSU0Zr8cU/TRXVx1qLJGqq4Icino1VqeCQDhQABvgWjMVWw5lj4VOap5oRsytomxF1a7exQd4kNcfSN2+s6eSb90J/eq7gFqTMmHu5TkkoqskpDUZHDIAgt32bjPtcndgZRkS9eaTm2n9e4c/2WwoxIAMOpLP0BednHSIVYeqirJB234up0aWQVqlNeQATlnrrJOdRa5bQT6SCCEW09hKV87cNnGsDrp39aXELJUXq6D+FQPnhS0e8yl1Gb/3yYdR+PCPTw8boeEebVIrNg/viQFEVOqbdGna3t75daAk0fhx/WE8BcMpDxobo5i1GFHBkZHsQyig7egsNlPS440wyuTpRfP7ISZvE2EtTzYOKYb3UyZsSnFoQ4ogNPX+w4fv9pAUrFwXBG+F7/sxpZsAnpeIx+em0vlWbTVmkAb1ZaHCM/WdLu35z8F/m2QkSz1XhPAVQJqz/nvb2eewKI3yBQy1mHZDiFysBo08iZ/+lrgmaTnpZL+QXcQzS54CGP9KnD2HUUSxRVsAFfdu0zw4Y8iUaMfAb7NoK5Z6tLFDNKHxm+wsIInmGLSyymDbkXM19kEG85X3m5+Dm61QIKTsBfU8smbDNC6EJ0vWLu8=
+addons:
+  apt:
+    update: true
