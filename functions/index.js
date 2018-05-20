@@ -11,6 +11,7 @@ exports.onAuthUserCreated = functions.auth.user().onCreate(user => {
   return db.collection('accounts').doc(user.uid).set({
     admin: false,
     email: user.email,
+    valid: true,
     createdAt: timestamp,
     updatedAt: timestamp
   })

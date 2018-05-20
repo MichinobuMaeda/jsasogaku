@@ -94,7 +94,7 @@
           ''
         )
       }}</div>
-      <div><v-icon>group</v-icon> {{
+      <div><v-icon>people</v-icon> {{
         $store.state.branches.reduce(
         (ret, cur) => cur.key === selectedUser.branch ? cur.text : ret,
           ''

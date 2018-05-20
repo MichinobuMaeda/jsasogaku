@@ -30,8 +30,10 @@
         <Loading v-if="page === PAGE.LOADING"/>
         <SignIn v-if="page === PAGE.SIGN_IN"/>
         <MainForm v-if="page === PAGE.MAIN_FORM"/>
+        <Account v-if="page === PAGE.ACCOUNT"/>
+        <Membership v-if="page === PAGE.MEMBERSHIP"/>
+        <Branch v-if="page === PAGE.BRANCH"/>
         <Resource v-if="page === PAGE.RESOURCE"/>
-        <RawJson v-if="page === PAGE.RAW_JSON"/>
         <debug v-if="page === PAGE.DEBUG"/>
       </v-container>
     </v-content>
@@ -69,10 +71,57 @@
             <v-list-tile-title>{{ res.titleSignOut }}</v-list-tile-title>
           </v-list-tile-content>
         </v-list-tile>
+
         <div
           v-show="me && accounts[me.uid] && accounts[me.uid].admin"
         >
           <v-subheader>{{ res.titleAdminMenu }}</v-subheader>
+
+          <v-list-tile
+            value="true"
+            @click="adminPageOnOff(PAGE.ACCOUNT)"
+          >
+            <v-list-tile-action>
+              <v-icon>account_circle</v-icon>
+            </v-list-tile-action>
+            <v-list-tile-content>
+              <v-list-tile-title>
+                {{ res.titleAccounts }}
+                {{ page === PAGE.ACCOUNT ? ' Off' : '' }}
+              </v-list-tile-title>
+            </v-list-tile-content>
+          </v-list-tile>
+
+          <v-list-tile
+            value="true"
+            @click="adminPageOnOff(PAGE.MEMBERSHIP)"
+          >
+            <v-list-tile-action>
+              <v-icon>people_outline</v-icon>
+            </v-list-tile-action>
+            <v-list-tile-content>
+              <v-list-tile-title>
+                {{ res.labelMembership }}
+                {{ page === PAGE.MEMBERSHIP ? ' Off' : '' }}
+              </v-list-tile-title>
+            </v-list-tile-content>
+          </v-list-tile>
+
+          <v-list-tile
+            value="true"
+            @click="adminPageOnOff(PAGE.BRANCH)"
+          >
+            <v-list-tile-action>
+              <v-icon>people</v-icon>
+            </v-list-tile-action>
+            <v-list-tile-content>
+              <v-list-tile-title>
+                {{ res.labelBranch }}
+                {{ page === PAGE.BRANCH ? ' Off' : '' }}
+              </v-list-tile-title>
+            </v-list-tile-content>
+          </v-list-tile>
+
           <v-list-tile
             value="true"
             @click="adminPageOnOff(PAGE.RESOURCE)"
@@ -81,25 +130,15 @@
               <v-icon>message</v-icon>
             </v-list-tile-action>
             <v-list-tile-content>
-              <v-list-tile-title>{{
-                page === PAGE.RESOURCE ? 'Resources Off' : 'Resources'
-              }}</v-list-tile-title>
+              <v-list-tile-title>
+                {{ res.titleResources }}
+                {{ page === PAGE.RESOURCE ? ' Off' : '' }}
+              </v-list-tile-title>
             </v-list-tile-content>
           </v-list-tile>
-          <v-list-tile
-            value="true"
-            @click="adminPageOnOff(PAGE.RAW_JSON)"
-          >
-            <v-list-tile-action>
-              <v-icon>find_in_page</v-icon>
-            </v-list-tile-action>
-            <v-list-tile-content>
-              <v-list-tile-title>{{
-                page === PAGE.RAW_JSON ? 'Raw JSON Off' : 'Raw JSON'
-              }}</v-list-tile-title>
-            </v-list-tile-content>
-          </v-list-tile>
+
         </div>
+
         <v-list-tile
           value="true"
           @click="adminPageOnOff(PAGE.DEBUG)"
@@ -183,8 +222,10 @@ import {
 import Loading from './components/Loading'
 import SignIn from './components/SignIn'
 import MainForm from './components/MainForm'
+import Account from './components/Account'
+import Membership from './components/Membership'
+import Branch from './components/Branch'
 import Resource from './components/Resource'
-import RawJson from './components/RawJson'
 import Debug from './components/Debug'
 
 export default {
@@ -229,8 +270,10 @@ export default {
     Loading,
     SignIn,
     MainForm,
+    Account,
+    Membership,
+    Branch,
     Resource,
-    RawJson,
     Debug
   },
   computed: {

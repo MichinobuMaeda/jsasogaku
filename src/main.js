@@ -9,7 +9,7 @@ import Firebase from 'firebase'
 import 'firebase/firestore'
 import {
   DB_RESOURCES, EMAIL_FOR_SIGN_IN,
-  SET_LOADING_MSG, SET_ME, SET_RESOURCE
+  SET_LOADING_MSG, SET_ME, SET_RESOURCE, SET_PAGE, PAGE
 } from './common'
 import loader from './loader'
 import mutations from './mutations'
@@ -47,15 +47,24 @@ if (firebase.auth().isSignInWithEmailLink(window.location.href)) {
   // Get the auth info.
   firebase.auth().onAuthStateChanged(async function (auth) {
     // Set the account signed in.
-    store.commit(SET_ME, auth)
 
     // If no auth info,
     if (!auth) {
+      store.state.memberships = {}
+      store.state.branches = {}
+      store.state.events = {}
+      store.state.accounts = {}
+      store.state.users = []
+      store.commit(SET_ME, auth)
+      store.commit(SET_PAGE, PAGE.LOADING)
+
       // Load data and show sign in page.
       Promise.resolve().then(() => loader.showSignInPage(config, store))
 
     // If auth info,
     } else {
+      store.commit(SET_ME, auth)
+
       // Load data and show main form page.
       Promise.resolve().then(() => loader.showMainFormPage(config, store))
     }

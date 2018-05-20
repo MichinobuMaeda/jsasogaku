@@ -1,16 +1,4 @@
-import {PAGE} from './common'
-
-/**
- * Sort by key.
- * @param {array} arr the array of objects with 'key' attribute.
- */
-function orderByKey (arr) {
-  return arr
-    ? arr.map((item, i) => item.key).sort().map(key => arr.reduce(
-      (ret, cur) => cur.key === key ? cur : ret, null)
-    )
-    : null
-}
+import {PAGE, orderByKey} from './common'
 
 /**
  * Set the next page and save the history.
@@ -130,7 +118,7 @@ const setMemberships = (state, querySnapshot) => {
   querySnapshot.forEach(function (doc) {
     arr.push({
       key: doc.id,
-      text: doc.data().name
+      ...doc.data()
     })
   })
   state.memberships = orderByKey(arr)
@@ -146,7 +134,7 @@ const setBranches = (state, querySnapshot) => {
   querySnapshot.forEach(function (doc) {
     arr.push({
       key: doc.id,
-      text: doc.data().name
+      ...doc.data()
     })
   })
   state.branches = orderByKey(arr)
@@ -210,6 +198,7 @@ const setAccount = (state, doc) => {
   state.accounts[doc.id] = {
     admin: doc.data().admin,
     email: doc.data().email,
+    valid: doc.data().valid,
     createdAt: doc.data().createdAt,
     updatedAt: doc.data().updatedAt
   }
@@ -221,22 +210,17 @@ const setAccount = (state, doc) => {
  * @param {object} account
  */
 const setMe = (state, account) => {
-  if (account) {
+  if (account && account.uid) {
     state.me = {
       uid: account.uid,
-      email: account.email
+      email: account.email || ''
     }
   } else {
     state.me = {}
-    state.memberships = {}
-    state.branches = {}
-    state.events = {}
-    setPage(state, PAGE.LOADING)
   }
 }
 
 export default {
-  orderByKey,
   setPage,
   backPage,
   setLoadingMessage,

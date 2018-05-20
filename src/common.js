@@ -22,6 +22,8 @@ export const SET_BRANCHES = 'setBranches'
 export const SET_EVENTS = 'setEvents'
 export const SET_USER = 'setUser'
 export const SET_ACCOUNT = 'setAccount'
+export const TOGGLE_ACCOUNT_IS_VALID = 'toggleAccountIdValid'
+export const TOGGLE_ACCOUNT_IS_ADMIN = 'toggleAccountIsAdmin'
 export const SET_ME = 'setMe'
 
 // Regexps
@@ -34,8 +36,10 @@ export const PAGE = {
   LOADING: 'Loading',
   SIGN_IN: 'SignIn',
   MAIN_FORM: 'MainForm',
+  MEMBERSHIP: 'Membership',
+  BRANCH: 'Branch',
   RESOURCE: 'Resource',
-  RAW_JSON: 'RawJson',
+  ACCOUNT: 'Account',
   DEBUG: 'Debug'
 }
 
@@ -45,4 +49,45 @@ export const PAGE = {
  */
 export const sleep = time => {
   return new Promise((resolve) => setTimeout(resolve, time))
+}
+
+/**
+ * Formant a number with 0 padding.
+ * @param {number} number
+ * @param {number} digits
+ */
+export const padDigits = (number, digits) => {
+  return Array(Math.max(digits - String(number).length + 1, 0)).join(0) + number
+}
+
+/**
+ * Create the array has keys from minCount to maxCount with a prefix and a suffix,
+ * and apply the original list values.
+ * @param {array} list
+ * @param {number} minCount >= 0
+ * @param {number} maxCount > minCount
+ * @param {string} prefix
+ * @param {number} digits > 0
+ * @param {string} suffix default: null
+ */
+export const createSparseList = (list, minCount, maxCount, prefix, digits, suffix = null) => {
+  let ret = []
+  for (let i = minCount; i <= maxCount; ++i) {
+    let key = (prefix || '') + padDigits(i, digits) + (suffix || '')
+    let item = list.reduce((ret, cur) => cur.key === key ? cur : ret, null)
+    ret.push(item || {key})
+  }
+  return ret
+}
+
+/**
+ * Sort by key.
+ * @param {array} arr the array of objects with 'key' attribute.
+ */
+export const orderByKey = arr => {
+  return arr
+    ? arr.map((item, i) => item.key).sort().map(key => arr.reduce(
+      (ret, cur) => cur.key === key ? cur : ret, null)
+    )
+    : null
 }

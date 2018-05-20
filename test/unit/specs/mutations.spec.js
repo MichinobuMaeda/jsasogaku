@@ -27,19 +27,49 @@ import mutations from '@/mutations'
 //   updatedAt: new Date('2018-01-01')
 // }
 
-describe('orderByKey', () => {
-  it('should sort by key.', () => {
-    expect(
-      mutations.orderByKey(null)
-    ).toBeNull()
-    expect(
-      mutations.orderByKey([
-        {key: '002', name: 'name02', val: 'val002'},
-        {key: '001', name: 'name01', val: 'val001'}
-      ])
-    ).toEqual([
-      {key: '001', name: 'name01', val: 'val001'},
-      {key: '002', name: 'name02', val: 'val002'}
-    ])
+describe('setMe', () => {
+  it('should set the account signed in.', () => {
+    {
+      let state = {}
+      mutations.setMe(state, null)
+      expect(state).toEqual({
+        me: {}
+      })
+    }
+    {
+      let state = {}
+      mutations.setMe(state, {
+        uid: 'uid001',
+        email: 'aaa@bbb.ccc',
+        other: 'dummy'
+      })
+      expect(state).toEqual({
+        me: {
+          uid: 'uid001',
+          email: 'aaa@bbb.ccc'
+        }
+      })
+    }
+    {
+      let state = {}
+      mutations.setMe(state, {
+        email: 'aaa@bbb.ccc'
+      })
+      expect(state).toEqual({
+        me: {}
+      })
+    }
+    {
+      let state = {}
+      mutations.setMe(state, {
+        uid: 'uid001'
+      })
+      expect(state).toEqual({
+        me: {
+          uid: 'uid001',
+          email: ''
+        }
+      })
+    }
   })
 })

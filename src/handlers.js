@@ -1,33 +1,56 @@
 import {
-  DB_COUNTERS, DB_RESOURCES, DB_USERS
+  DB_COUNTERS, DB_USERS, DB_ACCOUNTS
 } from './common'
 
 /**
- * Submit edited resources.
+ * Submit edited accounts.
  * @param {object} state Vuex app state.
- * @param {array} list edited resources.
+ * @param {array} list edited accounts.
  */
-export const onSubmitResources = async (state, list) => {
+export const onSubmitAccounts = async (state, list) => {
+  let tasks = []
+  const db = state.firebase.firestore()
   list.forEach(item => {
-    if (item.text.trim() !== item.org.trim()) {
-      const db = state.firebase.firestore()
-      let docRefRes = db.collection(DB_RESOURCES).doc(item.key)
-      // Start transaction.
-      db.runTransaction(async transaction => {
-        try {
-          let docRes = await transaction.get(docRefRes)
-          if (docRes.exists) {
-            let text = item.isArray ? item.text.trim().split('\n') : item.text.trim()
-            await transaction.update(docRefRes, {text})
-          } else {
-            window.alert(state.resources.errorConflictDeleted)
-          }
-        } catch (error) {
-          window.alert(error)
-        }
-      })
+    if ((item.valid !== item.orgValid) ||
+        (item.admin !== item.orgAdmin)) {
+      tasks.push(db.collection(DB_ACCOUNTS).doc(item.key).update({
+        valid: item.valid,
+        admin: item.admin,
+        updatedAt: new Date()
+      }))
     }
   })
+  try {
+    return Promise.all(tasks)
+  } catch (error) {
+    window.alert(error)
+  }
+}
+
+/**
+ * Submit edited text list.
+ * @param {object} collection the collection of Firestore.
+ * @param {array} list edited memberships.
+ * @param {boolean} permitEmpty default: false.
+ */
+export const onSubmitList = async (collection, list, permitEmpty = false) => {
+  let tasks = []
+  list.forEach(item => {
+    if ((item.text || '').trim() !== (item.org || '').trim()) {
+      console.log(item.text + ' ' + item.org)
+      if ((item.text || '').trim() || permitEmpty) {
+        let text = item.isArray ? item.text.trim().split('\n') : item.text.trim()
+        tasks.push(collection.doc(item.key).set({text}))
+      } else if (!permitEmpty) {
+        tasks.push(collection.doc(item.key).delete())
+      }
+    }
+  })
+  try {
+    return Promise.all(tasks)
+  } catch (error) {
+    window.alert(error)
+  }
 }
 
 /**

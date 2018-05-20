@@ -8,12 +8,11 @@
         <v-icon dark>clear</v-icon>
       </v-btn>
     </div>
-    <h2><v-icon dark>message</v-icon> {{ res.titleResources }}</h2>
+    <h2><v-icon dark>people_outline</v-icon> {{ res.labelMembership }}</h2>
     <div v-for="item in list" v-bind:key="item.key">
       <v-text-field
         :label="item.key"
         v-model="item.text"
-        :multi-line="item.isArray"
       ></v-text-field>
     </div>
     <v-btn
@@ -27,23 +26,19 @@
 </template>
 
 <script>
-import {BACK_PAGE, DB_RESOURCES} from '../common'
+import {BACK_PAGE, DB_MEMBERSHIPS, createSparseList} from '../common'
 import {onSubmitList} from '../handlers'
-
-const isArray = arr => Object.prototype.toString.call(arr) === '[object Array]'
-const arrayToText = arr => isArray(arr)
-          ? arr.join('\n')
-          : arr
 
 export default {
   data () {
     return {
-      list: Object.keys(this.$store.state.resources).sort().map(key => ({
-        key,
-        text: arrayToText(this.$store.state.resources[key]),
-        org: arrayToText(this.$store.state.resources[key]),
-        isArray: isArray(this.$store.state.resources[key])
-      })),
+      list: createSparseList(
+          this.$store.state.memberships, 1, 99, 'm', 2
+        ).map(item => ({
+          ...item,
+          org: item.text,
+          deleted: false
+        })),
       submitted: false,
       canceled: false
     }
@@ -59,9 +54,8 @@ export default {
       this.$store.commit(BACK_PAGE)
       window.scrollTo({top: 0})
       return onSubmitList(
-        this.$store.state.firebase.firestore().collection(DB_RESOURCES),
-        this.list,
-        true
+        this.$store.state.firebase.firestore().collection(DB_MEMBERSHIPS),
+        this.list
       )
     }
   },
