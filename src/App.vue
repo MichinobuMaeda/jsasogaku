@@ -1,18 +1,28 @@
 <template>
   <v-app>
-    <v-toolbar
-      color="grey lighten-2"
-      app
-      v-if="page !== PAGE.LOADING"
-    >
-      <v-toolbar-title v-text="res.titleSite"></v-toolbar-title>
-      <v-spacer></v-spacer>
-      <v-btn icon @click.stop="rightDrawer = !rightDrawer">
-        <v-icon>menu</v-icon>
-      </v-btn>
-    </v-toolbar>
     <v-content>
       <v-container fluid>
+        <div
+          id="floated_menu"
+          v-if="!rightDrawer && page === PAGE.MAIN_FORM"
+        >
+          <v-btn fab dark small fixed color="primary"
+            @click="rightDrawer = !rightDrawer"
+          >
+            <v-icon dark>menu</v-icon>
+          </v-btn>
+        </div>
+        <div
+          id="floated_menu"
+          v-if="!rightDrawer && page !== PAGE.MAIN_FORM && page !== PAGE.LOADING && page !== PAGE.SIGN_IN"
+        >
+          <v-btn fab dark small fixed color="error"
+            @click="cancel"
+          >
+            <v-icon dark>clear</v-icon>
+          </v-btn>
+        </div>
+        <h1>{{ res.titleSite }}</h1>
         <div
           id="sign-in-as"
           v-if="me.email &&
@@ -31,6 +41,7 @@
         <SignIn v-if="page === PAGE.SIGN_IN"/>
         <MainForm v-if="page === PAGE.MAIN_FORM"/>
         <Account v-if="page === PAGE.ACCOUNT"/>
+        <Event v-if="page === PAGE.EVENT"/>
         <Membership v-if="page === PAGE.MEMBERSHIP"/>
         <Branch v-if="page === PAGE.BRANCH"/>
         <Resource v-if="page === PAGE.RESOURCE"/>
@@ -48,7 +59,7 @@
       <v-list>
         <v-list-tile
           value="true"
-          @click="closeMenu"
+          @click="rightDrawer = false"
         >
           <v-list-tile-action>
             <v-icon>close</v-icon>
@@ -79,60 +90,16 @@
 
           <v-list-tile
             value="true"
-            @click="adminPageOnOff(PAGE.ACCOUNT)"
+            v-for="(item, index) in adminMenuItems"
+            v-bind:key="index"
+            @click="adminPageOnOff(item.page)"
           >
             <v-list-tile-action>
-              <v-icon>account_circle</v-icon>
+              <v-icon>{{ item.icon }}</v-icon>
             </v-list-tile-action>
             <v-list-tile-content>
               <v-list-tile-title>
-                {{ res.titleAccounts }}
-                {{ page === PAGE.ACCOUNT ? ' Off' : '' }}
-              </v-list-tile-title>
-            </v-list-tile-content>
-          </v-list-tile>
-
-          <v-list-tile
-            value="true"
-            @click="adminPageOnOff(PAGE.MEMBERSHIP)"
-          >
-            <v-list-tile-action>
-              <v-icon>people_outline</v-icon>
-            </v-list-tile-action>
-            <v-list-tile-content>
-              <v-list-tile-title>
-                {{ res.labelMembership }}
-                {{ page === PAGE.MEMBERSHIP ? ' Off' : '' }}
-              </v-list-tile-title>
-            </v-list-tile-content>
-          </v-list-tile>
-
-          <v-list-tile
-            value="true"
-            @click="adminPageOnOff(PAGE.BRANCH)"
-          >
-            <v-list-tile-action>
-              <v-icon>people</v-icon>
-            </v-list-tile-action>
-            <v-list-tile-content>
-              <v-list-tile-title>
-                {{ res.labelBranch }}
-                {{ page === PAGE.BRANCH ? ' Off' : '' }}
-              </v-list-tile-title>
-            </v-list-tile-content>
-          </v-list-tile>
-
-          <v-list-tile
-            value="true"
-            @click="adminPageOnOff(PAGE.RESOURCE)"
-          >
-            <v-list-tile-action>
-              <v-icon>message</v-icon>
-            </v-list-tile-action>
-            <v-list-tile-content>
-              <v-list-tile-title>
-                {{ res.titleResources }}
-                {{ page === PAGE.RESOURCE ? ' Off' : '' }}
+                {{ res[item.title] }}
               </v-list-tile-title>
             </v-list-tile-content>
           </v-list-tile>
@@ -148,9 +115,7 @@
             <v-icon>bug_report</v-icon>
           </v-list-tile-action>
           <v-list-tile-content>
-            <v-list-tile-title>{{
-              page === PAGE.DEBUG ? 'Debug Off' : 'Debug'
-            }}</v-list-tile-title>
+            <v-list-tile-title>Debug</v-list-tile-title>
           </v-list-tile-content>
         </v-list-tile>
       </v-list>
@@ -176,6 +141,12 @@
 body {
   font-size: 120%;
 }
+h1 {
+  font-weight: normal;
+  font-size: 22px;
+  padding: 1px 2px 1px 2px;
+  margin: 2px 0 2px 0;
+}
 h2 {
   font-weight: normal;
   color: white;
@@ -197,9 +168,9 @@ h4 {
   padding: 1px 4px 1px 4px;
   margin: 8px 0 8px 0;
 }
-.floated_cancel {
+#floated_menu {
   float: right;
-  padding: 48px 48px 0 0;
+  padding: 0 36px 0 0;
 }
 </style>
 
@@ -223,6 +194,7 @@ import Loading from './components/Loading'
 import SignIn from './components/SignIn'
 import MainForm from './components/MainForm'
 import Account from './components/Account'
+import Event from './components/Event'
 import Membership from './components/Membership'
 import Branch from './components/Branch'
 import Resource from './components/Resource'
@@ -232,12 +204,41 @@ export default {
   data () {
     return {
       rightDrawer: false,
-      PAGE
+      PAGE,
+      adminMenuItems: [
+        {
+          title: 'titleAccounts',
+          icon: 'account_circle',
+          page: PAGE.ACCOUNT
+        },
+        {
+          title: 'titleEvents',
+          icon: 'event',
+          page: PAGE.EVENT
+        },
+        {
+          title: 'labelMembership',
+          icon: 'people_outline',
+          page: PAGE.MEMBERSHIP
+        },
+        {
+          title: 'labelBranch',
+          icon: 'people',
+          page: PAGE.BRANCH
+        },
+        {
+          title: 'titleResources',
+          icon: 'message',
+          page: PAGE.RESOURCE
+        }
+      ]
     }
   },
   methods: {
-    closeMenu () {
-      this.rightDrawer = false
+    cancel () {
+      this.canceled = true
+      this.$store.commit(BACK_PAGE)
+      window.scrollTo({top: 0})
     },
     signOut () {
       if (this.page === PAGE.LOADING ||
@@ -271,6 +272,7 @@ export default {
     SignIn,
     MainForm,
     Account,
+    Event,
     Membership,
     Branch,
     Resource,

@@ -223,12 +223,20 @@
                     ></v-radio>
                   </v-radio-group>
                   <div
+                    v-else-if="item.default === ''"
+                  >
+                    <v-text-field
+                      :label="item.key + ': ' + item.name"
+                      v-model="selectedUserEvent.items[item.key]"
+                    ></v-text-field>
+                  </div>
+                  <div
                     v-else
                   >
-                  <v-checkbox
-                    :label="item.key + ': ' + item.name"
-                    v-model="selectedUserEvent.items[item.key]"
-                  ></v-checkbox>
+                    <v-checkbox
+                      :label="item.key + ': ' + item.name"
+                      v-model="selectedUserEvent.items[item.key]"
+                    ></v-checkbox>
                   </div>
                 </div>
                 <div>{{ res.guideEventNote }}</div>
@@ -334,7 +342,7 @@ export default {
       ],
       emailRules: [
         v => !v || REGEX_EMAIL.test(v) ||
-             this.res.validationEmaiFormat
+             this.res.validationEmailFormat
       ]
     }
   },

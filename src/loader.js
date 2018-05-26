@@ -2,8 +2,8 @@ import {
   DB_RESOURCES, DB_MEMBERSHIPS, DB_BRANCHES,
   DB_EVENTS, DB_ACCOUNTS, DB_USERS,
   SET_LOADING_MSG, SET_RESOURCE, SET_PAGE,
-  SET_MEMBERSHIPS, SET_BRANCHES, SET_EVENTS, SELECT_EVENT,
-  SET_ACCOUNT, SET_USER, SELECT_USER, PAGE,
+  SET_MEMBERSHIPS, SET_BRANCHES, SET_EVENTS,
+  SELECT_EVENT, SET_ACCOUNT, SET_USER, SELECT_USER, PAGE,
   sleep
 } from './common'
 
@@ -24,9 +24,9 @@ const initialState = (config, firebase) => {
       nodeEnv: process.env.NODE_ENV
     },
     resources: {},
-    memberships: {},
-    branches: {},
-    events: {},
+    memberships: [],
+    branches: [],
+    events: [],
     accounts: {},
     users: [],
     me: {},

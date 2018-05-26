@@ -22,7 +22,7 @@
           res.labelSubmitAuthEmail }}
       </v-btn>
     </v-form>
-    <h2><v-icon dark>message</v-icon> {{ res.titleSiteGude }}</h2>
+    <h2><v-icon dark>message</v-icon> {{ res.titleSiteGuide }}</h2>
     <p v-for="(text, index) in res.guideSite" v-bind:key="index">
       {{ text }}
     </p>
@@ -43,7 +43,7 @@ export default {
       emailRules: [
         v => !!v || this.res.validationRequired,
         v => REGEX_EMAIL.test(v) ||
-            this.res.validationEmaiFormat
+            this.res.validationEmailFormat
       ],
       checkbox: false
     }

@@ -36,10 +36,11 @@ export const PAGE = {
   LOADING: 'Loading',
   SIGN_IN: 'SignIn',
   MAIN_FORM: 'MainForm',
+  ACCOUNT: 'Account',
+  EVENT: 'Event',
   MEMBERSHIP: 'Membership',
   BRANCH: 'Branch',
   RESOURCE: 'Resource',
-  ACCOUNT: 'Account',
   DEBUG: 'Debug'
 }
 
@@ -90,4 +91,28 @@ export const orderByKey = arr => {
       (ret, cur) => cur.key === key ? cur : ret, null)
     )
     : null
+}
+
+/**
+ * 文字列表記の値を、number, boolean, Date に変換する。
+ * @param {string} str 文字列表記の値
+ */
+export const getValue = str => {
+  try {
+    if (!str) {
+      return str
+    } else if (str.match(/^true$/i)) {
+      return true
+    } else if (str.match(/^false$/i)) {
+      return false
+    } else if (str.match(/^-?\d+$/)) {
+      return parseInt(str, 10)
+    } else if (str.match(/^-?\d*.\d*$/) && str.match(/\d/)) {
+      return parseFloat(str)
+    } else if (str.match(/^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d/)) {
+      return parseInt(str, 10)
+    }
+  } catch (error) {
+    return str
+  }
 }

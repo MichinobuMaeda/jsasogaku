@@ -1,13 +1,5 @@
 <template>
   <div>
-    <div class="floated_cancel">
-      <v-btn fab dark small fixed color="primary"
-        :disabled="submitted || canceled"
-        @click="cancel"
-      >
-        <v-icon dark>clear</v-icon>
-      </v-btn>
-    </div>
     <h2><v-icon dark>account_circle</v-icon> {{ res.titleAccounts }}</h2>
     <table>
       <tr>
@@ -89,11 +81,6 @@ export default {
       this.list = this.list.map(item =>
         item.key === key ? {...item, admin: !item.admin} : item
       )
-    },
-    cancel () {
-      this.canceled = true
-      this.$store.commit(BACK_PAGE)
-      window.scrollTo({top: 0})
     },
     submit () {
       this.submitted = true

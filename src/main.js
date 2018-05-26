@@ -50,9 +50,9 @@ if (firebase.auth().isSignInWithEmailLink(window.location.href)) {
 
     // If no auth info,
     if (!auth) {
-      store.state.memberships = {}
-      store.state.branches = {}
-      store.state.events = {}
+      store.state.memberships = []
+      store.state.branches = []
+      store.state.events = []
       store.state.accounts = {}
       store.state.users = []
       store.commit(SET_ME, auth)

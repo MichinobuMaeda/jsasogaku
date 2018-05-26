@@ -1,13 +1,5 @@
 <template>
   <div>
-    <div class="floated_cancel">
-      <v-btn fab dark small fixed color="primary"
-        :disabled="submitted || canceled"
-        @click="cancel"
-      >
-        <v-icon dark>clear</v-icon>
-      </v-btn>
-    </div>
     <h2><v-icon dark>message</v-icon> {{ res.titleResources }}</h2>
     <div v-for="item in list" v-bind:key="item.key">
       <v-text-field
@@ -49,11 +41,6 @@ export default {
     }
   },
   methods: {
-    cancel () {
-      this.canceled = true
-      this.$store.commit(BACK_PAGE)
-      window.scrollTo({top: 0})
-    },
     submit () {
       this.submitted = true
       this.$store.commit(BACK_PAGE)

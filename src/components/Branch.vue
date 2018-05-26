@@ -1,13 +1,5 @@
 <template>
   <div>
-    <div class="floated_cancel">
-      <v-btn fab dark small fixed color="primary"
-        :disabled="submitted || canceled"
-        @click="cancel"
-      >
-        <v-icon dark>clear</v-icon>
-      </v-btn>
-    </div>
     <h2><v-icon dark>people</v-icon> {{ res.labelBranch }}</h2>
     <div v-for="item in list" v-bind:key="item.key">
       <v-text-field
@@ -36,19 +28,13 @@ export default {
           this.$store.state.branches, 1, 99, 'b', 2
         ).map(item => ({
           ...item,
-          org: item.text,
-          deleted: false
+          org: item.text
         })),
       submitted: false,
       canceled: false
     }
   },
   methods: {
-    cancel () {
-      this.canceled = true
-      this.$store.commit(BACK_PAGE)
-      window.scrollTo({top: 0})
-    },
     submit () {
       this.submitted = true
       this.$store.commit(BACK_PAGE)

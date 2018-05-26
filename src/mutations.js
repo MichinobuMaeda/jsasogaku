@@ -167,7 +167,7 @@ const setEvents = (state, querySnapshot) => {
       ))
     })
   })
-  state.events = orderByKey(arr)
+  state.events = orderByKey(arr).reverse()
 }
 
 /**

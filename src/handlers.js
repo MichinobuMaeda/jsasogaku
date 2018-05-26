@@ -1,5 +1,5 @@
 import {
-  DB_COUNTERS, DB_USERS, DB_ACCOUNTS
+  DB_COUNTERS, DB_USERS, DB_ACCOUNTS, getValue
 } from './common'
 
 /**
@@ -167,7 +167,7 @@ export const getReceiptNo = (state) => {
               cost: 0,
               entry: 1,
               items: state.site.selectedEvent.items.reduce(
-                (ret, cur) => ({...ret, [cur.key]: cur.default}), {}
+                (ret, cur) => ({...ret, [cur.key]: getValue(cur.default)}), {}
               )
             }
           },
