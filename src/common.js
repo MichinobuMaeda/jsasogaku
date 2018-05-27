@@ -36,6 +36,7 @@ export const PAGE = {
   LOADING: 'Loading',
   SIGN_IN: 'SignIn',
   MAIN_FORM: 'MainForm',
+  SUMMARY: 'Summary',
   ACCOUNT: 'Account',
   EVENT: 'Event',
   MEMBERSHIP: 'Membership',

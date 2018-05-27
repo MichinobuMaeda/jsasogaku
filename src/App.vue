@@ -40,6 +40,7 @@
         <Loading v-if="page === PAGE.LOADING"/>
         <SignIn v-if="page === PAGE.SIGN_IN"/>
         <MainForm v-if="page === PAGE.MAIN_FORM"/>
+        <Summary v-if="page === PAGE.SUMMARY"/>
         <Account v-if="page === PAGE.ACCOUNT"/>
         <Event v-if="page === PAGE.EVENT"/>
         <Membership v-if="page === PAGE.MEMBERSHIP"/>
@@ -193,6 +194,7 @@ import {
 import Loading from './components/Loading'
 import SignIn from './components/SignIn'
 import MainForm from './components/MainForm'
+import Summary from './components/Summary'
 import Account from './components/Account'
 import Event from './components/Event'
 import Membership from './components/Membership'
@@ -206,6 +208,11 @@ export default {
       rightDrawer: false,
       PAGE,
       adminMenuItems: [
+        {
+          title: 'titleSummary',
+          icon: 'list',
+          page: PAGE.SUMMARY
+        },
         {
           title: 'titleAccounts',
           icon: 'account_circle',
@@ -271,6 +278,7 @@ export default {
     Loading,
     SignIn,
     MainForm,
+    Summary,
     Account,
     Event,
     Membership,
