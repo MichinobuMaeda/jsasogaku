@@ -68,6 +68,11 @@
             ></v-text-field>
           </v-flex>
         </v-layout>
+        <v-text-field
+          :label="res.labelEventItemName"
+          v-model="item.name"
+          :readonly="event.status !== 'active'"
+        ></v-text-field>
         <div
           v-if="item.list"
         >
@@ -100,11 +105,6 @@
         <div
           v-else
         >
-          <v-text-field
-            :label="res.labelEventItemName"
-            v-model="item.name"
-            :readonly="event.status !== 'active'"
-          ></v-text-field>
           <v-layout row wrap>
             <v-flex
               xs4

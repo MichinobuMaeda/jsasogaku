@@ -52,7 +52,7 @@
         v-for="item in event.items"
         v-bind:key="item.key"
       >
-        <div slot="header">{{ item.key }}</div>
+        <div slot="header">{{ item.key }} {{ item.name }}</div>
         <table>
           <tr>
             <th>{{ res.labelUserName }}</th>

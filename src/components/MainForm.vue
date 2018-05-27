@@ -93,22 +93,21 @@
           (ret, cur) => cur.key === selectedUser.membership ? cur.text : ret,
           ''
         )
-      }}</div>
-      <div><v-icon>people</v-icon> {{
+      }}
+      &nbsp;
+      <v-icon>people</v-icon> {{
         $store.state.branches.reduce(
         (ret, cur) => cur.key === selectedUser.branch ? cur.text : ret,
           ''
         )
       }}</div>
-      <v-divider></v-divider>
-      <div>〒{{ selectedUser.zip }}</div>
-      <div
+      <div class="grey lighten-3">〒{{ selectedUser.zip }}</div>
+      <div class="grey lighten-3"
         v-for="(value, index) in selectedUser.address.split('\n')"
         v-bind:key="index"
       >
         {{ value }}
       </div>
-      <v-divider></v-divider>
       <div v-if="selectedUser.tel">
         <v-icon>phone</v-icon>
         {{ selectedUser.tel }}
@@ -125,6 +124,7 @@
       </div>
       <div
         v-if="selectedUser.note"
+        class="grey lighten-3"
         v-for="(value, index) in selectedUser.note.split('\n')"
         v-bind:key="index"
       >
@@ -202,14 +202,23 @@
                     selectedUserEvent.cost.toLocaleString()
                   }}-</span>
                 </div>
-                <div v-for="(text, index) in res.guideEventEntry" v-bind:key="index">
-                  {{ text }}
-                </div>
+                <v-card color="grey lighten-3">
+                  <v-card-text>
+                    <div v-for="(text, index) in res.guideEventEntry" v-bind:key="index">
+                      {{ text }}
+                    </div>
+                  </v-card-text>
+                </v-card>
                 <div
                   v-for="item in selectedEvent.items"
                   v-bind:key="item.key"
                   v-if="item.category === 'GA'"
                 >
+                  <h5
+                    v-if="item.list"
+                  >
+                    {{ item.name  }}
+                  </h5>
                   <v-radio-group
                     v-if="item.list"
                     v-model="selectedUserEvent.items[item.key]"
@@ -306,6 +315,7 @@
   background-color: #999999;
   color: white;
   padding: 0 12px 0 12px;
+  margin: 0 0 6px 0;
 }
 .big-number {
   font-family: monospace;
@@ -313,6 +323,11 @@
   padding: 0 6px 0 6px;
   color: black;
   background-color: white;
+}
+h5 {
+  font-weight: normal;
+  font-size: 18px;
+  margin: 6px 0 0 0;
 }
 </style>
 
