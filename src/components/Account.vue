@@ -35,7 +35,7 @@
     </table>
     <v-btn
       color="primary"
-      :disabled="submitted || canceled"      
+      :disabled="submitted"      
       @click="submit"
     >
       {{ res.labelSave }}
@@ -67,8 +67,7 @@ export default {
         orgValid: this.$store.state.accounts[key].valid,
         orgAdmin: this.$store.state.accounts[key].admin
       })),
-      submitted: false,
-      canceled: false
+      submitted: false
     }
   },
   methods: {

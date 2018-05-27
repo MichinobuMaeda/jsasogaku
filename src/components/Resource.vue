@@ -10,7 +10,7 @@
     </div>
     <v-btn
       color="primary"
-      :disabled="submitted || canceled"      
+      :disabled="submitted"      
       @click="submit"
     >
       {{ res.labelSave }}
@@ -36,8 +36,7 @@ export default {
         org: arrayToText(this.$store.state.resources[key]),
         isArray: isArray(this.$store.state.resources[key])
       })),
-      submitted: false,
-      canceled: false
+      submitted: false
     }
   },
   methods: {

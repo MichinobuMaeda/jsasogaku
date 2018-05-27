@@ -9,7 +9,7 @@
     </div>
     <v-btn
       color="primary"
-      :disabled="submitted || canceled"      
+      :disabled="submitted"      
       @click="submit"
     >
       {{ res.labelSave }}
@@ -30,8 +30,7 @@ export default {
           ...item,
           org: item.text
         })),
-      submitted: false,
-      canceled: false
+      submitted: false
     }
   },
   methods: {

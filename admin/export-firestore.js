@@ -1,4 +1,5 @@
 const Firestore = require('@google-cloud/firestore')
+const stringify = require('json-stable-stringify')
 
 Promise.resolve(process.env.PROJECT_ID).then(project => {
   const firestore = new Firestore({
@@ -20,7 +21,7 @@ Promise.resolve(process.env.PROJECT_ID).then(project => {
       )
     }
     return Promise.all(tasks).then(() => {
-      console.log(JSON.stringify(all, null, 2))
+      console.log(stringify(all, {space: 3}))
     })
   })
 })

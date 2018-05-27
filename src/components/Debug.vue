@@ -16,8 +16,7 @@ export default {
   data () {
     let {firebase, ...obj} = this.$store.state
     return {
-      state: JSON.stringify(obj, true, 2),
-      canceled: false
+      state: JSON.stringify(obj, true, 2)
     }
   },
   methods: {

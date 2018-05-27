@@ -101,9 +101,9 @@ export const getValue = str => {
   try {
     if (!str) {
       return str
-    } else if (str.match(/^true$/i)) {
+    } else if (str.match(/^(true|on|yes|t|y|有|◯)$/i)) {
       return true
-    } else if (str.match(/^false$/i)) {
+    } else if (str.match(/^(false|off|no|f|n|無|×)$/i)) {
       return false
     } else if (str.match(/^-?\d+$/)) {
       return parseInt(str, 10)

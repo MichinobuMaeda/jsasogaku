@@ -30,7 +30,7 @@ export const onSubmitAccounts = async (state, list) => {
 /**
  * Submit edited text list.
  * @param {object} collection the collection of Firestore.
- * @param {array} list edited memberships.
+ * @param {array} list edited list.
  * @param {boolean} permitEmpty default: false.
  */
 export const onSubmitList = async (collection, list, permitEmpty = false) => {
@@ -48,6 +48,45 @@ export const onSubmitList = async (collection, list, permitEmpty = false) => {
   })
   try {
     return Promise.all(tasks)
+  } catch (error) {
+    window.alert(error)
+  }
+}
+
+/**
+ * Submit edited text list.
+ * @param {object} collection the collection of Firestore.
+ * @param {object} event edited event.
+ * @param {array} memberships
+ */
+export const onSubmitEvents = async (collection, event, memberships) => {
+  if (!event) {
+    return
+  }
+  try {
+    let {key, ...data} = event
+    data.items = data.items.reduce((ret, cur) => {
+      let {key, ...item} = cur
+      item.category = item.category.trim()
+      item.default = getValue(item.default.trim()).toString()
+      if (item.list) {
+        item.list = item.list.map(listItem => {
+          listItem.name = listItem.name.trim()
+          memberships.forEach(m => {
+            listItem[m.key] = listItem[m.key] || 0
+          })
+          return listItem
+        })
+      } else {
+        item.name = item.name.trim()
+        memberships.forEach(m => {
+          item[m.key] = item[m.key] || 0
+        })
+      }
+      ret[key.trim()] = item
+      return ret
+    }, {})
+    await collection.doc(key).set(data)
   } catch (error) {
     window.alert(error)
   }
