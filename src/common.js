@@ -30,6 +30,7 @@ export const SET_ME = 'setMe'
 export const REGEX_EMAIL = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/
 export const REGEX_ZIP = /^[-0-9]+$/
 export const REGEX_TEL = /^[-0-9]+$/
+export const REGEX_INTEGER = /^-?[0-9]+$/
 
 // Pages
 export const PAGE = {
@@ -37,6 +38,7 @@ export const PAGE = {
   SIGN_IN: 'SignIn',
   MAIN_FORM: 'MainForm',
   SUMMARY: 'Summary',
+  USER: 'User',
   ACCOUNT: 'Account',
   EVENT: 'Event',
   MEMBERSHIP: 'Membership',
@@ -117,3 +119,33 @@ export const getValue = str => {
     return str
   }
 }
+
+export const getActiveUser = state => state.users.reduce(
+  (ret, cur) => cur.key === state.site.activeUser
+    ? {
+      ...cur,
+      events: JSON.parse(JSON.stringify(cur.events || {}))
+    }
+    : ret,
+  {
+    key: null,
+    uid: null,
+    name: '',
+    membership: null,
+    branch: null,
+    zip: '',
+    address: '',
+    tel: '',
+    fax: '',
+    cell: '',
+    email: '',
+    note: '',
+    events: {},
+    ver: 0,
+    createdAt: null,
+    updatedAt: null
+  }
+)
+
+export const getActiveEvent = state => state.events.reduce(
+  (ret, cur) => cur.key === state.site.activeEvent ? cur : ret, {})

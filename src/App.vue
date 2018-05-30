@@ -41,6 +41,7 @@
         <SignIn v-if="page === PAGE.SIGN_IN"/>
         <MainForm v-if="page === PAGE.MAIN_FORM"/>
         <Summary v-if="page === PAGE.SUMMARY"/>
+        <User v-if="page === PAGE.USER"/>
         <Account v-if="page === PAGE.ACCOUNT"/>
         <Event v-if="page === PAGE.EVENT"/>
         <Membership v-if="page === PAGE.MEMBERSHIP"/>
@@ -195,6 +196,7 @@ import Loading from './components/Loading'
 import SignIn from './components/SignIn'
 import MainForm from './components/MainForm'
 import Summary from './components/Summary'
+import User from './components/User'
 import Account from './components/Account'
 import Event from './components/Event'
 import Membership from './components/Membership'
@@ -212,6 +214,11 @@ export default {
           title: 'titleSummary',
           icon: 'list',
           page: PAGE.SUMMARY
+        },
+        {
+          title: 'titleUserList',
+          icon: 'face',
+          page: PAGE.USER
         },
         {
           title: 'titleAccounts',
@@ -279,6 +286,7 @@ export default {
     SignIn,
     MainForm,
     Summary,
+    User,
     Account,
     Event,
     Membership,

@@ -1,20 +1,28 @@
 <template>
   <div>
-    <h2><v-icon dark>face</v-icon> {{ res.titleProfile }}</h2>
+    <h2>
+      <v-icon dark>face</v-icon>
+      {{ activeUser.uid === me.uid ? res.titleProfile : res.titleUserList }}
+    </h2>
     <v-form
       v-model="personValid"
       ref="person"
-      v-if="personEdit || (!selectedUser.ver)"
+      v-if="personEdit || (!activeUser.ver)"
     >
       <v-text-field
+        v-if="accounts[me.uid].admin"
+        label="Account ID"
+        v-model="activeUser.uid"
+      ></v-text-field>
+      <v-text-field
         :label="res.labelUserName"
-        v-model="selectedUser.name"
+        v-model="activeUser.name"
         :rules="requiredRules"
         required
       ></v-text-field>
       <v-select
         :label="res.labelMembership"
-        v-model="selectedUser.membership"
+        v-model="activeUser.membership"
         :rules="requiredRules"
         required
         :items="$store.state.memberships"
@@ -22,7 +30,7 @@
       ></v-select>
       <v-select
         :label="res.labelBranch"
-        v-model="selectedUser.branch"
+        v-model="activeUser.branch"
         :rules="requiredRules"
         required
         :items="$store.state.branches"
@@ -30,44 +38,44 @@
       ></v-select>
       <v-text-field
         :label="res.labelZip"
-        v-model="selectedUser.zip"
+        v-model="activeUser.zip"
         :rules="zipRules"
         required
       ></v-text-field>
       <v-text-field
         :label="res.labelAddress"
-        v-model="selectedUser.address"
+        v-model="activeUser.address"
         :rules="requiredRules"
         required
         multi-line=true
       ></v-text-field>
       <v-text-field
         :label="res.labelTel"
-        v-model="selectedUser.tel"
+        v-model="activeUser.tel"
         :rules="telRules"
         type="tel"
       ></v-text-field>
       <v-text-field
         :label="res.labelFax"
-        v-model="selectedUser.fax"
+        v-model="activeUser.fax"
         :rules="telRules"
         type="tel"
       ></v-text-field>
       <v-text-field
         :label="res.labelCellPhone"
-        v-model="selectedUser.cell"
+        v-model="activeUser.cell"
         :rules="telRules"
         type="tel"
       ></v-text-field>
       <v-text-field
         :label="res.labelEmail"
-        v-model="selectedUser.email"
+        v-model="activeUser.email"
         :rules="emailRules"
         type="email"
       ></v-text-field>
       <v-text-field
         :label="res.labelProfileNote"
-        v-model="selectedUser.note"
+        v-model="activeUser.note"
         multi-line=true
       ></v-text-field>
       <v-btn
@@ -78,7 +86,7 @@
         {{ res.labelSave }}
       </v-btn>
       <v-btn
-         v-if="selectedUser.ver"
+         v-if="activeUser.ver"
         @click="reset"
       >
         {{ res.labelCancel }}
@@ -87,45 +95,48 @@
     <div
       v-else
     >
-      <div>{{ selectedUser.name }}</div>
+      <div
+        v-if="me && accounts[me.uid] && accounts[me.uid].admin"
+      >{{ activeUser.uid }}</div>
+      <div>{{ activeUser.name }}</div>
       <div><v-icon>people_outline</v-icon> {{
         $store.state.memberships.reduce(
-          (ret, cur) => cur.key === selectedUser.membership ? cur.text : ret,
+          (ret, cur) => cur.key === activeUser.membership ? cur.text : ret,
           ''
         )
       }}
       &nbsp;
       <v-icon>people</v-icon> {{
         $store.state.branches.reduce(
-        (ret, cur) => cur.key === selectedUser.branch ? cur.text : ret,
+        (ret, cur) => cur.key === activeUser.branch ? cur.text : ret,
           ''
         )
       }}</div>
-      <div class="grey lighten-3">〒{{ selectedUser.zip }}</div>
+      <div class="grey lighten-3">〒{{ activeUser.zip }}</div>
       <div class="grey lighten-3"
-        v-for="(value, index) in selectedUser.address.split('\n')"
+        v-for="(value, index) in activeUser.address.split('\n')"
         v-bind:key="index"
       >
         {{ value }}
       </div>
-      <div v-if="selectedUser.tel">
+      <div v-if="activeUser.tel">
         <v-icon>phone</v-icon>
-        {{ selectedUser.tel }}
+        {{ activeUser.tel }}
       </div>
-      <div v-if="selectedUser.fax">
-        Fax {{ selectedUser.fax }}
+      <div v-if="activeUser.fax">
+        Fax {{ activeUser.fax }}
       </div>
-      <div v-if="selectedUser.cell">
+      <div v-if="activeUser.cell">
         <v-icon>phone_android</v-icon>
-        {{ selectedUser.cell }}
+        {{ activeUser.cell }}
       </div>
-      <div v-if="selectedUser.email">
-        <v-icon>email</v-icon> {{ selectedUser.email }}
+      <div v-if="activeUser.email">
+        <v-icon>email</v-icon> {{ activeUser.email }}
       </div>
       <div
-        v-if="selectedUser.note"
+        v-if="activeUser.note"
         class="grey lighten-3"
-        v-for="(value, index) in selectedUser.note.split('\n')"
+        v-for="(value, index) in activeUser.note.split('\n')"
         v-bind:key="index"
       >
         {{ value || '&nbsp;' }}
@@ -138,9 +149,9 @@
       </v-btn>
       <h2><v-icon dark>assignment</v-icon> {{ res.titleReceiptInformation }}</h2>
       <h3
-        v-if="!selectedEvent"
+        v-if="!activeEvent.key"
       >
-        <v-icon>event_busy</v-icon>
+        <v-icon dark>event_busy</v-icon>
         {{ res.statusNoActiveEvent }}
       </h3>
       <div
@@ -148,16 +159,16 @@
       >
         <h3>
           <v-icon dark>event_available</v-icon> 
-          {{ selectedEvent.name }}
+          {{ activeEvent.name }}
         </h3>
         <p>
-          {{ selectedEvent.desc }}
+          {{ activeEvent.desc }}
         </p>
         <div
-          v-if="selectedUser.ver"
+          v-if="activeUser.ver"
         >
           <div
-            v-if="!selectedUser.events ||
+            v-if="!activeUser.events ||
                   !selectedUserEvent"
           >
             <v-btn
@@ -210,7 +221,7 @@
                   </v-card-text>
                 </v-card>
                 <div
-                  v-for="item in selectedEvent.items"
+                  v-for="item in activeEvent.items"
                   v-bind:key="item.key"
                   v-if="item.category === 'GA'"
                 >
@@ -256,7 +267,7 @@
                 ></v-text-field>
                 <h4>{{ res.titleExcursion }}</h4>
                 <div
-                  v-for="item in selectedEvent.items"
+                  v-for="item in activeEvent.items"
                   v-bind:key="item.key"
                   v-if="item.category === 'excursion'"
                 >
@@ -269,7 +280,7 @@
                 <div>{{ res.guideLectureEntry }}</div>
                 <div>{{ res.labelLectureEntryCount }} [ {{
                   Object.keys(selectedUserEvent.items).reduce(
-                    (ret1, cur1) => selectedEvent.items.reduce(
+                    (ret1, cur1) => activeEvent.items.reduce(
                       (ret2, cur2) => cur2.key === cur1 &&
                         cur2.category === 'lecture' &&
                         selectedUserEvent.items[cur1]
@@ -278,7 +289,7 @@
                   )
                 }} ]</div>
                 <div
-                  v-for="item in selectedEvent.items"
+                  v-for="item in activeEvent.items"
                   v-bind:key="item.key"
                   v-if="item.category === 'lecture'"
                 >
@@ -296,7 +307,7 @@
                 {{ res.labelSave }}
               </v-btn>
               <v-btn
-                v-if="selectedUser.ver"
+                v-if="activeUser.ver"
                 @click="reset"
               >
                 {{ res.labelCancel }}
@@ -333,8 +344,8 @@ h5 {
 
 <script>
 import {
-  SELECT_USER,
-  REGEX_EMAIL, REGEX_ZIP, REGEX_TEL
+  SELECT_USER, REGEX_EMAIL, REGEX_ZIP, REGEX_TEL,
+  getActiveUser, getActiveEvent
 } from '../common'
 import {onSubmitUser, getReceiptNo} from '../handlers'
 
@@ -358,16 +369,34 @@ export default {
       emailRules: [
         v => !v || REGEX_EMAIL.test(v) ||
              this.res.validationEmailFormat
-      ]
+      ],
+      activeUser: this.$store.state.site.activeUser
+        ? {...getActiveUser(this.$store.state)}
+        : {
+          uid: this.$store.state.me.userKey ? null : this.$store.state.me.uid,
+          name: '',
+          membership: null,
+          branch: null,
+          zip: '',
+          address: '',
+          tel: '',
+          fax: '',
+          cell: '',
+          email: this.$store.state.me.userKey ? '' : this.$store.state.me.email,
+          note: '',
+          events: {},
+          ver: 0
+        }
     }
   },
   methods: {
     submit () {
-      onSubmitUser(this.$store.state)
+      onSubmitUser(this.$store.state, this.activeUser)
       this.personEdit = false
     },
     reset () {
-      this.$store.commit(SELECT_USER, this.selectedUser)
+      window.scrollTo({top: 0})
+      this.$store.commit(SELECT_USER, this.$store.state.site.activeUser)
       this.personEdit = false
     },
     toggleEditPerson () {
@@ -382,15 +411,17 @@ export default {
     res () {
       return this.$store.state.resources
     },
-    selectedUser () {
-      return this.$store.state.site.selectedUser
+    accounts () {
+      return this.$store.state.accounts
     },
-    selectedEvent () {
-      return this.$store.state.site.selectedEvent
+    me () {
+      return this.$store.state.me
+    },
+    activeEvent () {
+      return getActiveEvent(this.$store.state)
     },
     selectedUserEvent () {
-      return this.$store.state.site.selectedUser
-        .events[this.$store.state.site.selectedEvent.key]
+      return this.activeUser.events[this.$store.state.site.activeEvent]
     }
   }
 }

@@ -14,6 +14,8 @@
           <v-text-field
             :label="res.labelEventCode"
             v-model="event.key"
+            :rules="requiredRules"
+            required
             :disabled="true"
           ></v-text-field>
         </v-flex>
@@ -23,13 +25,17 @@
             v-model="event.status"
             label="Status"
             item-value="text"
-            class="white"
+            class="grey lighten-5"
+            :rules="requiredRules"
+            required
           ></v-select>
         </v-flex>
       </v-layout>
       <v-text-field
         :label="res.labelEventName"
         v-model="event.name"
+        :rules="requiredRules"
+        required
         :readonly="event.status !== 'active'"
       ></v-text-field>
       <v-text-field
@@ -48,6 +54,8 @@
               prepend-icon="label"
               label="Code"
               v-model="item.key"
+              :rules="requiredRules"
+              required
               :readonly="event.status !== 'active'"
             ></v-text-field>
           </v-flex>
@@ -57,11 +65,14 @@
               v-model="item.category"
               label="Category"
               item-value="text"
+              :rules="requiredRules"
+              required
               :readonly="event.status !== 'active'"
             ></v-select>
           </v-flex>
           <v-flex xs4>
             <v-text-field
+              v-if="item.category !== 'lecture'"
               label="default"
               v-model="item.default"
               :readonly="event.status !== 'active'"
@@ -71,6 +82,8 @@
         <v-text-field
           :label="res.labelEventItemName"
           v-model="item.name"
+          :rules="requiredRules"
+          required
           :readonly="event.status !== 'active'"
         ></v-text-field>
         <div
@@ -83,9 +96,13 @@
             <v-text-field
               :label="(index + 1).toString() + ':' + res.labelEventItemName"
               v-model="item.list[index].name"
+              :rules="requiredRules"
+              required
               :readonly="event.status !== 'active'"
             ></v-text-field>
-            <v-layout row wrap>
+            <v-layout row wrap
+              v-if="item.category !== 'lecture'"
+            >
               <v-flex
                 xs4
                 v-for="m in memberships"
@@ -96,6 +113,7 @@
                   :label="m.text"
                   v-model="item.list[index][m.key]"
                   prefix="¥"
+                  :rules="numberRules"
                   :readonly="event.status !== 'active'"
                 ></v-text-field>
               </v-flex>
@@ -105,7 +123,9 @@
         <div
           v-else
         >
-          <v-layout row wrap>
+          <v-layout row wrap
+            v-if="item.category !== 'lecture'"
+          >
             <v-flex
               xs4
               v-for="m in memberships"
@@ -116,6 +136,7 @@
                 :label="m.text"
                 v-model="item[m.key]"
                 prefix="¥"
+                :rules="numberRules"
                 :readonly="event.status !== 'active'"
               ></v-text-field>
             </v-flex>
@@ -141,7 +162,7 @@
 
 
 <script>
-import {DB_EVENTS, BACK_PAGE} from '../common'
+import {DB_EVENTS, BACK_PAGE, REGEX_INTEGER} from '../common'
 import {onSubmitEvents} from '../handlers'
 
 export default {
@@ -154,6 +175,13 @@ export default {
         status: event.status,
         items: event.items.map(item => ({...item}))
       })),
+      requiredRules: [
+        v => !!v || this.res.validationRequired
+      ],
+      numberRules: [
+        v => !!v || this.res.validationRequired,
+        v => REGEX_INTEGER.test(v) || this.res.validationInteger
+      ],
       eventStatus: [
         {text: 'active'},
         {text: 'closed'}

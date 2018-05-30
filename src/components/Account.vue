@@ -7,6 +7,9 @@
         <th>{{ res.labelAdmin }}</th>
         <th>{{ res.labelEmail }}</th>
         <th class="account-id">Account ID</th>
+        <th>{{ res.labelUserName }}</th>
+        <th>{{ res.labelMembership }}</th>
+        <th>{{ res.labelBranch }}</th>
       </tr>
       <tr v-for="item in list" v-bind:key="item.key">
         <td class="valid">
@@ -31,6 +34,24 @@
         </td>
         <td class="email">{{ item.email }}</td>
         <td class="account-id">{{ item.key }}</td>
+        <td>
+          {{
+            users.reduce(
+              (ret, cur) => cur.uid === item.key ? cur.name : ret, '')
+          }}
+        </td>
+        <td>
+          {{
+            memberships[users.reduce(
+              (ret, cur) => cur.uid === item.key ? cur.membership : ret, '')]
+          }}
+        </td>
+        <td>
+          {{
+            branches[users.reduce(
+              (ret, cur) => cur.uid === item.key ? cur.branch : ret, '')]
+          }}
+        </td>
       </tr>
     </table>
     <v-btn
@@ -44,11 +65,17 @@
 </template>
 
 <style scoped>
+table {
+  border-collapse: collapse;
+}
+th, td {
+  border: solid 1px black;
+  padding: 1px 4px 1px 4px;
+}
 td.valid, td.admin {
   text-align: center;
 }
 td.account-id {
-  padding-left: 10px;
   font-family: 'Courier New', Courier, monospace;
   font-size: 90%;
 }
@@ -91,6 +118,15 @@ export default {
   computed: {
     res () {
       return this.$store.state.resources
+    },
+    memberships () {
+      return this.$store.state.memberships.reduce((ret, cur) => ({...ret, [cur.key]: cur.text}), {})
+    },
+    branches () {
+      return this.$store.state.branches.reduce((ret, cur) => ({...ret, [cur.key]: cur.text}), {})
+    },
+    users () {
+      return this.$store.state.users
     }
   }
 }

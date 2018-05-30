@@ -50,49 +50,24 @@ const setLoadingMessage = (state, msg) => {
 /**
  * Set the subjected user.
  * @param {object} state Vuex app state.
- * @param {object} user
+ * @param {object} key
  */
-const selectUser = (state, user) => {
+const selectUser = (state, key) => {
   state.site = {
     ...state.site,
-    selectedUser: state.users.reduce(
-      (ret, cur) => (user && cur.uid === user.uid)
-        ? {
-          ...cur,
-          events: JSON.parse(JSON.stringify(cur.events))
-        }
-        : ret,
-      {
-        key: null,
-        uid: user ? user.uid : null,
-        name: '',
-        membership: null,
-        branch: null,
-        zip: '',
-        address: '',
-        tel: '',
-        fax: '',
-        cell: '',
-        email: user ? user.email : '',
-        note: '',
-        events: {},
-        ver: 0,
-        createdAt: null,
-        updatedAt: null
-      }
-    )
+    activeUser: key
   }
 }
 
 /**
  * Set the subjected event.
  * @param {object} state Vuex app state.
- * @param {object} event
+ * @param {object} key
  */
-const selectEvent = (state, event) => {
+const selectEvent = (state, key) => {
   state.site = {
     ...state.site,
-    selectedEvent: event
+    activeEvent: key
   }
 }
 

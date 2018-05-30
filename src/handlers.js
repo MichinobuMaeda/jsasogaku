@@ -1,5 +1,6 @@
 import {
-  DB_COUNTERS, DB_USERS, DB_ACCOUNTS, getValue
+  DB_COUNTERS, DB_USERS, DB_ACCOUNTS, getValue,
+  getActiveEvent
 } from './common'
 
 /**
@@ -68,19 +69,19 @@ export const onSubmitEvents = async (collection, event, memberships) => {
     data.items = data.items.reduce((ret, cur) => {
       let {key, ...item} = cur
       item.category = item.category.trim()
-      item.default = getValue(item.default.trim()).toString()
+      item.default = getValue(item.default.trim() || '').toString()
       if (item.list) {
         item.list = item.list.map(listItem => {
           listItem.name = listItem.name.trim()
           memberships.forEach(m => {
-            listItem[m.key] = listItem[m.key] || 0
+            listItem[m.key] = getValue(listItem[m.key] || '0')
           })
           return listItem
         })
       } else {
         item.name = item.name.trim()
         memberships.forEach(m => {
-          item[m.key] = item[m.key] || 0
+          item[m.key] = getValue(item[m.key] || 0)
         })
       }
       ret[key.trim()] = item
@@ -95,26 +96,26 @@ export const onSubmitEvents = async (collection, event, memberships) => {
 /**
  * Submit edited user.
  * @param {object} state Vuex app state.
+ * @param {object} activeUser
  */
-export const onSubmitUser = (state) => {
-  let {key, ver, ...user} = state.site.selectedUser
+export const onSubmitUser = (state, activeUser) => {
+  const {key, ver, ...user} = activeUser
   const timestamp = new Date()
   const db = state.firebase.firestore()
 
   // Recalc the sum.
-  const activeEvent = state.site.selectedEvent
-  const activeUser = state.site.selectedUser
+  const activeEvent = getActiveEvent(state)
   let userEvent = activeUser.events[activeEvent.key]
   if (userEvent) {
     userEvent.cost = !userEvent.entry
       ? 0
       : Object.keys(userEvent.items).reduce(
         (ret1, cur1) => ret1 + activeEvent.items.reduce(
-          (ret2, cur2) => ret2 + (cur2.key === cur1
+          (ret2, cur2) => ret2 + getValue(cur2.key === cur1
             ? userEvent.items[cur1]
               ? Array.isArray(cur2.list)
-                ? cur2.list[userEvent.items[cur1] - 1][activeUser.membership] || 0
-                : (cur2[activeUser.membership] || 0)
+                ? cur2.list[userEvent.items[cur1] - 1][user.membership] || 0
+                : (cur2[user.membership] || 0)
               : 0
             : 0)
           , 0
@@ -129,6 +130,9 @@ export const onSubmitUser = (state) => {
       createdAt: timestamp,
       updatedAt: timestamp
     })
+    ++activeUser.ver
+    activeUser.createdAt = timestamp
+    activeUser.updatedAt = timestamp
 
   // If update the user data.
   } else {
@@ -153,6 +157,8 @@ export const onSubmitUser = (state) => {
               ver: ver + 1,
               updatedAt: timestamp
             })
+            ++activeUser.ver
+            activeUser.createdAt = timestamp
           }
 
         // If the user data is not exists.
@@ -180,12 +186,13 @@ export const onSubmitUser = (state) => {
  * @param {object} state Vuex app state.
  */
 export const getReceiptNo = (state) => {
+  const activeEvent = getActiveEvent(state)
   const db = state.firebase.firestore()
   let docRefCounter = db.collection(DB_COUNTERS).doc(
-    state.site.selectedEvent.key
+    activeEvent.key
   )
   let docRefUser = db.collection(DB_USERS).doc(
-    state.site.selectedUser.key
+    state.site.activeUser
   )
   // Start transaction.
   return db.runTransaction(async transaction => {
@@ -201,11 +208,11 @@ export const getReceiptNo = (state) => {
         // Save the user data.
         await transaction.update(docRefUser, {
           events: {
-            [state.site.selectedEvent.key]: {
+            [state.site.activeEvent]: {
               number: count,
               cost: 0,
               entry: 1,
-              items: state.site.selectedEvent.items.reduce(
+              items: activeEvent.items.reduce(
                 (ret, cur) => ({...ret, [cur.key]: getValue(cur.default)}), {}
               )
             }
