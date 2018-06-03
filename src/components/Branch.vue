@@ -1,6 +1,13 @@
 <template>
   <div>
     <h2><v-icon dark>people</v-icon> {{ res.labelBranch }}</h2>
+    <v-card color="grey lighten-3">
+      <v-card-text>
+        <div v-for="(text, index) in res.guideAdminBranch" v-bind:key="index">
+          {{ text }}
+        </div>
+      </v-card-text>
+    </v-card>
     <div v-for="item in list" v-bind:key="item.key">
       <v-text-field
         :label="item.key"

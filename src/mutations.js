@@ -158,8 +158,8 @@ const setUser = (state, doc) => {
   }
   user.events = user.events || {}
   state.users = [
-    user,
-    ...state.users.filter(user => user.uid !== doc.data().uid)
+    ...state.users.filter(user => user.key !== doc.id),
+    user
   ]
 }
 

@@ -8,12 +8,16 @@ const db = admin.firestore()
 exports.onAuthUserCreated = functions.auth.user().onCreate(user => {
   // アカウント情報を作成する。
   const timestamp = new Date()
-  return db.collection('accounts').doc(user.uid).set({
-    admin: false,
-    email: user.email,
-    valid: true,
-    createdAt: timestamp,
-    updatedAt: timestamp
+  return db.collection('accounts').get()
+  .then(res => {
+    const admin = res.empty
+    return db.collection('accounts').doc(user.uid).set({
+      admin,
+      email: user.email,
+      valid: true,
+      createdAt: timestamp,
+      updatedAt: timestamp
+    })
   })
   .then(doc => true)
   .catch(error => console.error(error))

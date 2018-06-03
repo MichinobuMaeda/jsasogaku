@@ -1,6 +1,13 @@
 <template>
   <div>
     <h2><v-icon dark>account_circle</v-icon> {{ res.titleAccounts }}</h2>
+    <v-card color="grey lighten-3">
+      <v-card-text>
+        <div v-for="(text, index) in res.guideAdminAccount" v-bind:key="index">
+          {{ text }}
+        </div>
+      </v-card-text>
+    </v-card>
     <table>
       <tr>
         <th>{{ res.labelAccountValid }}</th>
@@ -35,22 +42,28 @@
         <td class="email">{{ item.email }}</td>
         <td class="account-id">{{ item.key }}</td>
         <td>
-          {{
-            users.reduce(
-              (ret, cur) => cur.uid === item.key ? cur.name : ret, '')
-          }}
+          <div
+            v-for="user in users.filter(user => user.uid === item.key)"
+            v-bind:key="user.key"
+          >
+            {{ user.name }}
+          </div>
         </td>
         <td>
-          {{
-            memberships[users.reduce(
-              (ret, cur) => cur.uid === item.key ? cur.membership : ret, '')]
-          }}
+          <div
+            v-for="user in users.filter(user => user.uid === item.key)"
+            v-bind:key="user.key"
+          >
+            {{ memberships.reduce((ret, cur) => cur.key === user.membership ? cur.text : ret, null) }}
+          </div>
         </td>
         <td>
-          {{
-            branches[users.reduce(
-              (ret, cur) => cur.uid === item.key ? cur.branch : ret, '')]
-          }}
+          <div
+            v-for="user in users.filter(user => user.uid === item.key)"
+            v-bind:key="user.key"
+          >
+            {{ branches.reduce((ret, cur) => cur.key === user.branch ? cur.text : ret, null) }}
+          </div>
         </td>
       </tr>
     </table>
@@ -82,7 +95,7 @@ td.account-id {
 </style>
 
 <script>
-import {BACK_PAGE} from '../common'
+import {BACK_PAGE, DB_ACCOUNTS} from '../common'
 import {onSubmitAccounts} from '../handlers'
 
 export default {
@@ -112,7 +125,10 @@ export default {
       this.submitted = true
       this.$store.commit(BACK_PAGE)
       window.scrollTo({top: 0})
-      return onSubmitAccounts(this.$store.state, this.list)
+      return onSubmitAccounts(
+        this.$store.state.firebase.firestore().collection(DB_ACCOUNTS),
+        this.list
+      )
     }
   },
   computed: {
@@ -120,10 +136,10 @@ export default {
       return this.$store.state.resources
     },
     memberships () {
-      return this.$store.state.memberships.reduce((ret, cur) => ({...ret, [cur.key]: cur.text}), {})
+      return this.$store.state.memberships
     },
     branches () {
-      return this.$store.state.branches.reduce((ret, cur) => ({...ret, [cur.key]: cur.text}), {})
+      return this.$store.state.branches
     },
     users () {
       return this.$store.state.users

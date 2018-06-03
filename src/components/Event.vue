@@ -72,7 +72,6 @@
           </v-flex>
           <v-flex xs4>
             <v-text-field
-              v-if="item.category !== 'lecture'"
               label="default"
               v-model="item.default"
               :readonly="event.status !== 'active'"

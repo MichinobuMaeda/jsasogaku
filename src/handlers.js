@@ -1,20 +1,18 @@
 import {
-  DB_COUNTERS, DB_USERS, DB_ACCOUNTS, getValue,
-  getActiveEvent
+  DB_COUNTERS, DB_USERS, getValue, getActiveEvent
 } from './common'
 
 /**
  * Submit edited accounts.
- * @param {object} state Vuex app state.
+ * @param {object} collection the collection of Firestore.
  * @param {array} list edited accounts.
  */
-export const onSubmitAccounts = async (state, list) => {
+export const onSubmitAccounts = async (collection, list) => {
   let tasks = []
-  const db = state.firebase.firestore()
   list.forEach(item => {
     if ((item.valid !== item.orgValid) ||
         (item.admin !== item.orgAdmin)) {
-      tasks.push(db.collection(DB_ACCOUNTS).doc(item.key).update({
+      tasks.push(collection.doc(item.key).update({
         valid: item.valid,
         admin: item.admin,
         updatedAt: new Date()
@@ -69,7 +67,7 @@ export const onSubmitEvents = async (collection, event, memberships) => {
     data.items = data.items.reduce((ret, cur) => {
       let {key, ...item} = cur
       item.category = item.category.trim()
-      item.default = getValue(item.default.trim() || '').toString()
+      item.default = getValue(item.default.trim() || '')
       if (item.list) {
         item.list = item.list.map(listItem => {
           listItem.name = listItem.name.trim()
@@ -98,14 +96,14 @@ export const onSubmitEvents = async (collection, event, memberships) => {
  * @param {object} state Vuex app state.
  * @param {object} activeUser
  */
-export const onSubmitUser = (state, activeUser) => {
-  const {key, ver, ...user} = activeUser
+export const onSubmitUser = async (state, user) => {
+  const {key, ver, ...userData} = user
   const timestamp = new Date()
   const db = state.firebase.firestore()
 
   // Recalc the sum.
   const activeEvent = getActiveEvent(state)
-  let userEvent = activeUser.events[activeEvent.key]
+  let userEvent = user.events[activeEvent.key]
   if (userEvent) {
     userEvent.cost = !userEvent.entry
       ? 0
@@ -114,8 +112,8 @@ export const onSubmitUser = (state, activeUser) => {
           (ret2, cur2) => ret2 + getValue(cur2.key === cur1
             ? userEvent.items[cur1]
               ? Array.isArray(cur2.list)
-                ? cur2.list[userEvent.items[cur1] - 1][user.membership] || 0
-                : (cur2[user.membership] || 0)
+                ? cur2.list[userEvent.items[cur1] - 1][userData.membership] || 0
+                : (cur2[userData.membership] || 0)
               : 0
             : 0)
           , 0
@@ -124,15 +122,20 @@ export const onSubmitUser = (state, activeUser) => {
   }
   // If add the new user data.
   if (!ver) {
-    db.collection(DB_USERS).doc().set({
-      ...user,
+    let docRef = db.collection(DB_USERS).doc()
+    console.log(docRef.id)
+    await docRef.set({
+      ...userData,
       ver: ver + 1,
       createdAt: timestamp,
       updatedAt: timestamp
     })
-    ++activeUser.ver
-    activeUser.createdAt = timestamp
-    activeUser.updatedAt = timestamp
+    console.log(docRef.id)
+    ++user.ver
+    user.createdAt = timestamp
+    user.updatedAt = timestamp
+    user.key = docRef.id
+    state.site.activeUser = docRef.id
 
   // If update the user data.
   } else {
@@ -153,12 +156,12 @@ export const onSubmitUser = (state, activeUser) => {
           } else {
             // Update the user data
             await transaction.update(docRef, {
-              ...user,
+              ...userData,
               ver: ver + 1,
               updatedAt: timestamp
             })
-            ++activeUser.ver
-            activeUser.createdAt = timestamp
+            ++user.ver
+            user.createdAt = timestamp
           }
 
         // If the user data is not exists.
@@ -174,8 +177,6 @@ export const onSubmitUser = (state, activeUser) => {
           window.alert(error)
         }
         window.location.href = window.location.href
-      } finally {
-        window.scrollTo({top: 0, behavior: 'smooth'})
       }
     })
   }
@@ -184,8 +185,9 @@ export const onSubmitUser = (state, activeUser) => {
 /**
  * Get new receipt number.
  * @param {object} state Vuex app state.
+ * @param {object} user the user edited.
  */
-export const getReceiptNo = (state) => {
+export const getReceiptNo = (state, user) => {
   const activeEvent = getActiveEvent(state)
   const db = state.firebase.firestore()
   let docRefCounter = db.collection(DB_COUNTERS).doc(
@@ -196,7 +198,6 @@ export const getReceiptNo = (state) => {
   )
   // Start transaction.
   return db.runTransaction(async transaction => {
-    let timestamp = new Date()
     try {
       let docCounter = await transaction.get(docRefCounter)
       let docUser = await transaction.get(docRefUser)
@@ -205,23 +206,30 @@ export const getReceiptNo = (state) => {
         // Get the new number
         let count = docCounter.data().count + 1
         await transaction.update(docRefCounter, {count})
-        // Save the user data.
+        let events = {
+          ...user.events,
+          [activeEvent.key]: {
+            entry: 1,
+            number: count,
+            cost: 0,
+            items: activeEvent.items.reduce(
+              (ret, cur) => ({...ret, [cur.key]: cur.default}),
+              {}
+            )
+          }
+        }
+        let ver = docUser.data().ver + 1
+        let updatedAt = new Date()
         await transaction.update(docRefUser, {
-          events: {
-            [state.site.activeEvent]: {
-              number: count,
-              cost: 0,
-              entry: 1,
-              items: activeEvent.items.reduce(
-                (ret, cur) => ({...ret, [cur.key]: getValue(cur.default)}), {}
-              )
-            }
-          },
-          ver: docUser.data().ver + 1,
-          updatedAt: timestamp
+          events,
+          ver,
+          updatedAt
         })
+        user.events = events
+        user.ver = ver
+        user.updatedAt = updatedAt
 
-      // If the receipt number counter is not exists,
+        // If the receipt number counter is not exists,
       } else {
         /* eslint-disable no-throw-literal */
         throw state.resources.errorMissReceiptNoCounter

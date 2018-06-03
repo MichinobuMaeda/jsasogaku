@@ -109,7 +109,8 @@ const showMainFormPage = async (config, store) => {
     })
     // Get the list of all users -- asynchronous with realtime updates.
     store.state.site.wait[DB_USERS] = true
-    db.collection(DB_USERS).onSnapshot(setUsers(store))
+    db.collection(DB_USERS).orderBy('branch', 'asc').orderBy('name', 'asc')
+    .onSnapshot(setUsers(store))
 
   // If the account doesn't have admin privilege.
   } else {
@@ -123,7 +124,8 @@ const showMainFormPage = async (config, store) => {
     // Get the user data of the account -- asynchronous with realtime updates.
     store.state.site.wait[DB_USERS] = true
     db.collection(DB_USERS)
-    .where('uid', '==', store.state.me.uid).onSnapshot(setUsers(store))
+    .where('uid', '==', store.state.me.uid).orderBy('branch', 'asc').orderBy('name', 'asc')
+    .onSnapshot(setUsers(store))
   }
 }
 
@@ -160,7 +162,6 @@ const setUsers = store => querySnapshot => {
   querySnapshot.forEach(function (doc) {
     store.commit(SET_USER, doc)
     if (doc.data().uid === store.state.me.uid) {
-      store.state.me.userKey = doc.id
       store.commit(SELECT_USER, doc.id)
     }
   })

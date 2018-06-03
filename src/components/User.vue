@@ -1,6 +1,13 @@
 <template>
   <div>
     <h2><v-icon dark>face</v-icon> {{ res.titleUserList }}</h2>
+    <v-card color="grey lighten-3">
+      <v-card-text>
+        <div v-for="(text, index) in res.guideAdminUser" v-bind:key="index">
+          {{ text }}
+        </div>
+      </v-card-text>
+    </v-card>
     <table>
       <tr>
         <th class="account-id">Account ID</th>
@@ -17,8 +24,8 @@
           </v-btn>
           {{ item.name }}
         </td>
-        <td>{{ memberships[item.membership] }}</td>
-        <td>{{ branches[item.branch] }}</td>
+        <td>{{ memberships.reduce((ret, cur) => cur.key === item.membership ? cur.text : ret, null) }}</td>
+        <td>{{ branches.reduce((ret, cur) => cur.key === item.branch ? cur.text : ret, null) }}</td>
         <td>{{ item.email }}</td>
       </tr>
       <tr>
@@ -76,10 +83,10 @@ export default {
       return this.$store.state.resources
     },
     memberships () {
-      return this.$store.state.memberships.reduce((ret, cur) => ({...ret, [cur.key]: cur.text}), {})
+      return this.$store.state.memberships
     },
     branches () {
-      return this.$store.state.branches.reduce((ret, cur) => ({...ret, [cur.key]: cur.text}), {})
+      return this.$store.state.branches
     }
   }
 }

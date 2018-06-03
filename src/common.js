@@ -120,32 +120,5 @@ export const getValue = str => {
   }
 }
 
-export const getActiveUser = state => state.users.reduce(
-  (ret, cur) => cur.key === state.site.activeUser
-    ? {
-      ...cur,
-      events: JSON.parse(JSON.stringify(cur.events || {}))
-    }
-    : ret,
-  {
-    key: null,
-    uid: null,
-    name: '',
-    membership: null,
-    branch: null,
-    zip: '',
-    address: '',
-    tel: '',
-    fax: '',
-    cell: '',
-    email: '',
-    note: '',
-    events: {},
-    ver: 0,
-    createdAt: null,
-    updatedAt: null
-  }
-)
-
 export const getActiveEvent = state => state.events.reduce(
   (ret, cur) => cur.key === state.site.activeEvent ? cur : ret, {})

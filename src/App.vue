@@ -72,6 +72,17 @@
         </v-list-tile>
         <v-list-tile
           value="true"
+          @click="refresh"
+        >
+          <v-list-tile-action>
+            <v-icon>refresh</v-icon>
+          </v-list-tile-action>
+          <v-list-tile-content>
+            <v-list-tile-title>{{ res.labelRefresh }}</v-list-tile-title>
+          </v-list-tile-content>
+        </v-list-tile>
+        <v-list-tile
+          value="true"
           @click="signOut"
           :disabled="page === PAGE.LOADING ||
                      page === PAGE.SIGN_IN || 
@@ -124,7 +135,7 @@
     </v-navigation-drawer>
     <v-footer
       color="grey lighten-2"
-      :fixed="trye"
+      :fixed="true"
       app
       v-if="page !== PAGE.LOADING"
     >
@@ -173,6 +184,9 @@ h4 {
 #floated_menu {
   float: right;
   padding: 0 36px 0 0;
+}
+table {
+  margin: 4px 0 4px 0;
 }
 </style>
 
@@ -278,6 +292,9 @@ export default {
       }
       this.rightDrawer = false
       window.scrollTo({top: 0})
+    },
+    refresh () {
+      window.location.href = window.location.href
     }
   },
   name: 'App',

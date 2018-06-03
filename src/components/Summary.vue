@@ -1,6 +1,13 @@
 <template>
   <div>
     <h2><v-icon dark>list</v-icon> {{ res.titleSummary }}</h2>
+    <v-card color="grey lighten-3">
+      <v-card-text>
+        <div v-for="(text, index) in res.guideAdminSummary" v-bind:key="index">
+          {{ text }}
+        </div>
+      </v-card-text>
+    </v-card>
     <v-expansion-panel>
       <v-expansion-panel-content>
         <div slot="header">All</div>
@@ -24,8 +31,8 @@
           >
             <td>{{ ++seq }}</td>
             <td>{{ user.name }}</td>
-            <td>{{ memberships[user.membership] }}</td>
-            <td>{{ branches[user.branch] }}</td>
+            <td>{{ memberships.reduce((ret, cur) => cur.key === user.membership ? cur.text : ret, null) }}</td>
+            <td>{{ branches.reduce((ret, cur) => cur.key === user.branch ? cur.text : ret, null) }}</td>
             <td
               v-for="item in activeEvent.items"
               v-bind:key="item.key"
@@ -55,7 +62,7 @@
         v-for="item in activeEvent.items"
         v-bind:key="item.key"
       >
-        <div slot="header">{{ item.key }}: {{ item.name }}</div>
+        <div slot="header">{{ item.key }}. {{ item.name }}</div>
         <div style="display: none;">{{ seq = 0 }}</div>
         <table>
           <tr>
@@ -63,9 +70,6 @@
             <th>{{ res.labelUserName }}</th>
             <th>{{ res.labelMembership }}</th>
             <th>{{ res.labelBranch }}</th>
-            <th
-              v-if="item.category === 'lecture'"
-            >Title</th>
             <th
               v-if="item.list"
               v-for="(i, index) in item.list"
@@ -81,11 +85,8 @@
           >
             <td>{{ ++seq }}</td>
             <td>{{ user.name }}</td>
-            <td>{{ memberships[user.membership] }}</td>
-            <td>{{ branches[user.branch] }}</td>
-            <td
-              v-if="item.category === 'lecture'"
-            >{{ user.events[activeEvent.key].items[item.key] }}</td>
+            <td>{{ memberships.reduce((ret, cur) => cur.key === user.membership ? cur.text : ret, null) }}</td>
+            <td>{{ branches.reduce((ret, cur) => cur.key === user.branch ? cur.text : ret, null) }}</td>
             <td
               v-if="item.list"
               v-for="(i, index) in item.list"
@@ -128,10 +129,10 @@ export default {
       return this.$store.state.resources
     },
     memberships () {
-      return this.$store.state.memberships.reduce((ret, cur) => ({...ret, [cur.key]: cur.text}), {})
+      return this.$store.state.memberships
     },
     branches () {
-      return this.$store.state.branches.reduce((ret, cur) => ({...ret, [cur.key]: cur.text}), {})
+      return this.$store.state.branches
     },
     activeEvent () {
       return getActiveEvent(this.$store.state)
