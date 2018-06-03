@@ -161,7 +161,7 @@
 
 
 <script>
-import {DB_EVENTS, BACK_PAGE, REGEX_INTEGER} from '../common'
+import {DB_EVENTS, BACK_PAGE, REGEX_INTEGER, getFirestore} from '../common'
 import {onSubmitEvents} from '../handlers'
 
 export default {
@@ -199,7 +199,7 @@ export default {
       this.$store.commit(BACK_PAGE)
       window.scrollTo({top: 0})
       return onSubmitEvents(
-        this.$store.state.firebase.firestore().collection(DB_EVENTS),
+        getFirestore(this.$store.state.firebase).collection(DB_EVENTS),
         this.list.reduce((ret, cur) => cur.key === key ? cur : ret, null),
         this.$store.state.memberships
       )

@@ -2,7 +2,8 @@ const functions = require('firebase-functions')
 const admin = require('firebase-admin')
 
 admin.initializeApp()
-const db = admin.firestore()
+const db = admin
+db.settings({timestampsInSnapshots: true})
 
 // 認証ユーザ作成時の処理。
 exports.onAuthUserCreated = functions.auth.user().onCreate(user => {

@@ -122,3 +122,9 @@ export const getValue = str => {
 
 export const getActiveEvent = state => state.events.reduce(
   (ret, cur) => cur.key === state.site.activeEvent ? cur : ret, {})
+
+export const getFirestore = firebase => {
+  const firestore = firebase.firestore()
+  firestore.settings({timestampsInSnapshots: true})
+  return firestore
+}

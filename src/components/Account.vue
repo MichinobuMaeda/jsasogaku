@@ -95,7 +95,7 @@ td.account-id {
 </style>
 
 <script>
-import {BACK_PAGE, DB_ACCOUNTS} from '../common'
+import {BACK_PAGE, DB_ACCOUNTS, getFirestore} from '../common'
 import {onSubmitAccounts} from '../handlers'
 
 export default {
@@ -126,7 +126,7 @@ export default {
       this.$store.commit(BACK_PAGE)
       window.scrollTo({top: 0})
       return onSubmitAccounts(
-        this.$store.state.firebase.firestore().collection(DB_ACCOUNTS),
+        getFirestore(this.$store.state.firebase).collection(DB_ACCOUNTS),
         this.list
       )
     }

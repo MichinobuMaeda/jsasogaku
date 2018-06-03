@@ -9,7 +9,8 @@ import Firebase from 'firebase'
 import 'firebase/firestore'
 import {
   DB_RESOURCES, EMAIL_FOR_SIGN_IN,
-  SET_LOADING_MSG, SET_ME, SET_RESOURCE, SET_PAGE, PAGE
+  SET_LOADING_MSG, SET_ME, SET_RESOURCE, SET_PAGE, PAGE,
+  getFirestore
 } from './common'
 import loader from './loader'
 import mutations from './mutations'
@@ -75,7 +76,7 @@ if (firebase.auth().isSignInWithEmailLink(window.location.href)) {
  * Do "sign in with email" and return to the app.
  */
 const confirmSignIn = async (store) => {
-  const db = store.state.firebase.firestore()
+  const db = getFirestore(store.state.firebase)
   store.commit(SET_LOADING_MSG, config.messages.loadingData)
   let querySnapshot = await db.collection(DB_RESOURCES).get()
   store.commit(SET_RESOURCE, querySnapshot)

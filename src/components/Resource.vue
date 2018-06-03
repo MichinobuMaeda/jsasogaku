@@ -26,7 +26,7 @@
 </template>
 
 <script>
-import {BACK_PAGE, DB_RESOURCES} from '../common'
+import {BACK_PAGE, DB_RESOURCES, getFirestore} from '../common'
 import {onSubmitList} from '../handlers'
 
 const isArray = arr => Object.prototype.toString.call(arr) === '[object Array]'
@@ -52,7 +52,7 @@ export default {
       this.$store.commit(BACK_PAGE)
       window.scrollTo({top: 0})
       return onSubmitList(
-        this.$store.state.firebase.firestore().collection(DB_RESOURCES),
+        getFirestore(this.$store.state.firebase).collection(DB_RESOURCES),
         this.list,
         true
       )

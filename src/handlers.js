@@ -1,5 +1,5 @@
 import {
-  DB_COUNTERS, DB_USERS, getValue, getActiveEvent
+  DB_COUNTERS, DB_USERS, getValue, getActiveEvent, getFirestore
 } from './common'
 
 /**
@@ -99,7 +99,7 @@ export const onSubmitEvents = async (collection, event, memberships) => {
 export const onSubmitUser = async (state, user) => {
   const {key, ver, ...userData} = user
   const timestamp = new Date()
-  const db = state.firebase.firestore()
+  const db = getFirestore(state.firebase)
 
   // Recalc the sum.
   const activeEvent = getActiveEvent(state)
@@ -189,7 +189,7 @@ export const onSubmitUser = async (state, user) => {
  */
 export const getReceiptNo = (state, user) => {
   const activeEvent = getActiveEvent(state)
-  const db = state.firebase.firestore()
+  const db = getFirestore(state.firebase)
   let docRefCounter = db.collection(DB_COUNTERS).doc(
     activeEvent.key
   )

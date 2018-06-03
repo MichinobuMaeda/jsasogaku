@@ -4,7 +4,7 @@ import {
   SET_LOADING_MSG, SET_RESOURCE, SET_PAGE,
   SET_MEMBERSHIPS, SET_BRANCHES, SET_EVENTS,
   SELECT_EVENT, SET_ACCOUNT, SET_USER, SELECT_USER, PAGE,
-  sleep
+  sleep, getFirestore
 } from './common'
 
 /**
@@ -41,7 +41,7 @@ const initialState = (config, firebase) => {
  * @param {Vuex.Store} store
  */
 const showSignInPage = async (config, store) => {
-  const db = store.state.firebase.firestore()
+  const db = getFirestore(store.state.firebase)
   // Start to load stored data.
   store.commit(SET_LOADING_MSG, config.messages.loadingData)
   // Load resources -- synchronous.
@@ -57,7 +57,7 @@ const showSignInPage = async (config, store) => {
  * @param {Vuex.Store} store
  */
 const showMainFormPage = async (config, store) => {
-  const db = store.state.firebase.firestore()
+  const db = getFirestore(store.state.firebase)
   // Wait and get the registered account data -- synchronous.
   const account = await getRegisteredAccount(config, store, db)
   // Start to load stored data and show the main form page.
@@ -140,7 +140,6 @@ const getRegisteredAccount = async (config, store, db) => {
     try {
       let account = await db.collection(DB_ACCOUNTS).doc(store.state.me.uid).get()
       if (account && account.exists) {
-        console.log(account)
         return account
       } else {
         store.commit(SET_LOADING_MSG, config.messages.regAccount)

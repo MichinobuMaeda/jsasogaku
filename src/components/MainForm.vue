@@ -111,7 +111,7 @@
       <v-text-field
         :label="res.labelProfileNote"
         v-model="user.note"
-        multi-line=true
+        :multi-line="true"
       ></v-text-field>
       <v-btn
         color="primary"
@@ -304,7 +304,7 @@
                 <v-text-field
                   :label="res.labelEventNote"
                   v-model="selectedUserEvent.note"
-                  multi-line=true
+                  :multi-line="true"
                 ></v-text-field>
                 <h4>{{ res.titleLectureEntry }}</h4>
                 <v-card color="grey lighten-3">

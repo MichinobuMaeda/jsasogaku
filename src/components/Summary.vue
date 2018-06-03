@@ -13,7 +13,6 @@
         <div slot="header">All</div>
         <table>
           <tr>
-            <th>No.</th>
             <th>{{ res.labelUserName }}</th>
             <th>{{ res.labelMembership }}</th>
             <th>{{ res.labelBranch }}</th>
@@ -30,7 +29,6 @@
             v-bind:key="user.key"
             v-if="user.events[activeEvent.key] && user.events[activeEvent.key].entry"
           >
-            <td class="num">{{ ++seq }}</td>
             <td>{{ user.name }}</td>
             <td>{{ memberships.reduce((ret, cur) => cur.key === user.membership ? cur.text : ret, null) }}</td>
             <td>{{ branches.reduce((ret, cur) => cur.key === user.branch ? cur.text : ret, null) }}</td>
@@ -62,7 +60,6 @@
         <div style="display: none;">{{ seq = 0 }}</div>
         <table>
           <tr>
-            <th>No.</th>
             <th>{{ res.labelUserName }}</th>
             <th>{{ res.labelMembership }}</th>
             <th>{{ res.labelBranch }}</th>
@@ -79,7 +76,6 @@
                   user.events[activeEvent.key].entry &&
                   user.events[activeEvent.key].items[item.key]"
           >
-            <td class="num">{{ ++seq }}</td>
             <td>{{ user.name }}</td>
             <td>{{ memberships.reduce((ret, cur) => cur.key === user.membership ? cur.text : ret, null) }}</td>
             <td>{{ branches.reduce((ret, cur) => cur.key === user.branch ? cur.text : ret, null) }}</td>

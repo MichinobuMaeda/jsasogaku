@@ -25,7 +25,7 @@
 </template>
 
 <script>
-import {BACK_PAGE, DB_MEMBERSHIPS, createSparseList} from '../common'
+import {BACK_PAGE, DB_MEMBERSHIPS, createSparseList, getFirestore} from '../common'
 import {onSubmitList} from '../handlers'
 
 export default {
@@ -46,7 +46,7 @@ export default {
       this.$store.commit(BACK_PAGE)
       window.scrollTo({top: 0})
       return onSubmitList(
-        this.$store.state.firebase.firestore().collection(DB_MEMBERSHIPS),
+        getFirestore(this.$store.state.firebase).collection(DB_MEMBERSHIPS),
         this.list
       )
     }
