@@ -28,6 +28,7 @@
           <tr
             v-for="user in users"
             v-bind:key="user.key"
+            v-if="user.events[activeEvent.key] && user.events[activeEvent.key].entry"
           >
             <td class="num">{{ ++seq }}</td>
             <td>{{ user.name }}</td>
@@ -39,21 +40,15 @@
               class="value"
             >
               {{
-                  user.events[activeEvent.key] &&
-                  user.events[activeEvent.key].entry
+                user.events[activeEvent.key].items[item.key]
+                  ? item.list
                     ? user.events[activeEvent.key].items[item.key]
-                      ? item.list
-                        ? user.events[activeEvent.key].items[item.key]
-                        : '○'
-                      : '×'
-                    : '-' }}
+                    : '○'
+                  : '×'
+              }}
             </td>
             <td class="num">
-              {{
-                user.events[activeEvent.key]
-                  ? user.events[activeEvent.key].cost.toLocaleString()
-                  : '-'
-              }}
+              {{ user.events[activeEvent.key].cost.toLocaleString() }}
             </td>
 
           </tr>
