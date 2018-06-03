@@ -26,16 +26,17 @@
             <th>{{ res.labelAcceptsSummary }}</th>
           </tr>
           <tr
-            v-for="user in list"
+            v-for="user in users"
             v-bind:key="user.key"
           >
-            <td>{{ ++seq }}</td>
+            <td class="num">{{ ++seq }}</td>
             <td>{{ user.name }}</td>
             <td>{{ memberships.reduce((ret, cur) => cur.key === user.membership ? cur.text : ret, null) }}</td>
             <td>{{ branches.reduce((ret, cur) => cur.key === user.branch ? cur.text : ret, null) }}</td>
             <td
               v-for="item in activeEvent.items"
               v-bind:key="item.key"
+              class="value"
             >
               {{
                   user.events[activeEvent.key] &&
@@ -47,7 +48,7 @@
                       : '×'
                     : '-' }}
             </td>
-            <td>
+            <td class="num">
               {{
                 user.events[activeEvent.key]
                   ? user.events[activeEvent.key].cost.toLocaleString()
@@ -77,17 +78,18 @@
             >{{ i.name }}</th>
           </tr>
           <tr
-            v-for="user in list"
+            v-for="user in users"
             v-bind:key="user.key"
             v-if="user.events[activeEvent.key] &&
                   user.events[activeEvent.key].entry &&
                   user.events[activeEvent.key].items[item.key]"
           >
-            <td>{{ ++seq }}</td>
+            <td class="num">{{ ++seq }}</td>
             <td>{{ user.name }}</td>
             <td>{{ memberships.reduce((ret, cur) => cur.key === user.membership ? cur.text : ret, null) }}</td>
             <td>{{ branches.reduce((ret, cur) => cur.key === user.branch ? cur.text : ret, null) }}</td>
             <td
+              class="value"
               v-if="item.list"
               v-for="(i, index) in item.list"
               v-bind:key="index"
@@ -107,6 +109,12 @@ th, td {
   border: solid 1px black;
   padding: 1px 2px 1px 2px;
 }
+td.num {
+  text-align: right;
+}
+td.value {
+  text-align: center;
+}
 </style>
 
 <script>
@@ -115,10 +123,6 @@ import {getActiveEvent} from '../common'
 export default {
   data () {
     return {
-      list: Object.keys(this.$store.state.users).sort().map(key => ({
-        key,
-        ...this.$store.state.users[key]
-      })),
       seq: 0
     }
   },
@@ -127,6 +131,9 @@ export default {
   computed: {
     res () {
       return this.$store.state.resources
+    },
+    users () {
+      return this.$store.state.users
     },
     memberships () {
       return this.$store.state.memberships
