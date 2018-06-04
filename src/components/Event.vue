@@ -30,26 +30,30 @@
             required
           ></v-select>
         </v-flex>
+        <v-flex xs12>
+          <v-text-field
+            :label="res.labelEventName"
+            v-model="event.name"
+            :rules="requiredRules"
+            required
+            :readonly="event.status !== 'active'"
+          ></v-text-field>
+        </v-flex>
+        <v-flex xs12>
+          <v-text-field
+            :label="res.labelEventDesc"
+            v-model="event.desc"
+            :readonly="event.status !== 'active'"
+          ></v-text-field>
+        </v-flex>
       </v-layout>
-      <v-text-field
-        :label="res.labelEventName"
-        v-model="event.name"
-        :rules="requiredRules"
-        required
-        :readonly="event.status !== 'active'"
-      ></v-text-field>
-      <v-text-field
-        :label="res.labelEventDesc"
-        v-model="event.desc"
-        :readonly="event.status !== 'active'"
-      ></v-text-field>
       <div
         v-if="event.status === 'active'"
         v-for="(item, index) in event.items"
         v-bind:key="index"
       >
         <v-layout row wrap>
-          <v-flex xs4 class="column">
+          <v-flex xs4 sm4 md1 lg1 xl1 class="column">
             <v-text-field
               prepend-icon="label"
               label="Code"
@@ -59,7 +63,7 @@
               :readonly="event.status !== 'active'"
             ></v-text-field>
           </v-flex>
-          <v-flex xs4 class="column">
+          <v-flex xs4 sm4 md2 lg2 xl2 class="column">
             <v-select
               :items="itemCategories"
               v-model="item.category"
@@ -70,70 +74,51 @@
               :readonly="event.status !== 'active'"
             ></v-select>
           </v-flex>
-          <v-flex xs4>
+          <v-flex xs4 sm4 md2 lg2 xl2>
             <v-text-field
               label="default"
               v-model="item.default"
               :readonly="event.status !== 'active'"
             ></v-text-field>
           </v-flex>
-        </v-layout>
-        <v-text-field
-          :label="res.labelEventItemName"
-          v-model="item.name"
-          :rules="requiredRules"
-          required
-          :readonly="event.status !== 'active'"
-        ></v-text-field>
-        <div
-          v-if="item.list"
-        >
-          <div
-            v-for="(listItem, index) in item.list"
-            v-bind:key="index"
-          >
+          <v-flex xs12 sm12 md7 lg7 xl7>
             <v-text-field
-              :label="(index + 1).toString() + ':' + res.labelEventItemName"
-              v-model="item.list[index].name"
+              :label="res.labelEventItemName"
+              v-model="item.name"
               :rules="requiredRules"
               required
               :readonly="event.status !== 'active'"
             ></v-text-field>
-            <v-layout row wrap
-              v-if="item.category !== 'lecture'"
-            >
-              <v-flex
-                xs4
-                v-for="m in memberships"
-                v-bind:key="m.key"
-                class="column"
-              >
-                <v-text-field
-                  :label="m.text"
-                  v-model="item.list[index][m.key]"
-                  prefix="¥"
-                  :rules="numberRules"
-                  :readonly="event.status !== 'active'"
-                ></v-text-field>
-              </v-flex>
-            </v-layout>
-          </div>
-        </div>
+          </v-flex>
+        </v-layout>
         <div
-          v-else
+          v-if="item.list"
         >
-          <v-layout row wrap
-            v-if="item.category !== 'lecture'"
+          <v-layout
+            row wrap
+            v-for="(listItem, index) in item.list"
+            v-bind:key="index"
           >
+            <v-flex xs12>
+              <v-text-field
+                :label="(index + 1).toString() + ':' + res.labelEventItemName"
+                v-model="item.list[index].name"
+                :rules="requiredRules"
+                required
+                :readonly="event.status !== 'active'"
+                :prefix="(index + 1).toString() + ':'"
+              ></v-text-field>
+            </v-flex>
             <v-flex
-              xs4
+              xs6 sm4 md2 lg2 xl2
               v-for="m in memberships"
               v-bind:key="m.key"
               class="column"
+              v-if="item.category !== 'lecture'"
             >
               <v-text-field
                 :label="m.text"
-                v-model="item[m.key]"
+                v-model="item.list[index][m.key]"
                 prefix="¥"
                 :rules="numberRules"
                 :readonly="event.status !== 'active'"
@@ -141,6 +126,26 @@
             </v-flex>
           </v-layout>
         </div>
+        <v-layout
+          row wrap
+          v-else
+        >
+          <v-flex
+            xs6 sm4 md2 lg2 xl2
+            v-for="m in memberships"
+            v-bind:key="m.key"
+            class="column"
+            v-if="item.category !== 'lecture'"
+          >
+            <v-text-field
+              :label="m.text"
+              v-model="item[m.key]"
+              prefix="¥"
+              :rules="numberRules"
+              :readonly="event.status !== 'active'"
+            ></v-text-field>
+          </v-flex>
+        </v-layout>
       </div>
       <v-btn
         color="primary"

@@ -96,7 +96,7 @@ export const onSubmitEvents = async (collection, event, memberships) => {
  * @param {object} state Vuex app state.
  * @param {object} activeUser
  */
-export const onSubmitUser = async (state, user) => {
+export const onSubmitUser = async (state, user, summary) => {
   const {key, ver, ...userData} = user
   const timestamp = new Date()
   const db = getFirestore(state.firebase)
@@ -105,20 +105,7 @@ export const onSubmitUser = async (state, user) => {
   const activeEvent = getActiveEvent(state)
   let userEvent = user.events[activeEvent.key]
   if (userEvent) {
-    userEvent.cost = !userEvent.entry
-      ? 0
-      : Object.keys(userEvent.items).reduce(
-        (ret1, cur1) => ret1 + activeEvent.items.reduce(
-          (ret2, cur2) => ret2 + getValue(cur2.key === cur1
-            ? userEvent.items[cur1]
-              ? Array.isArray(cur2.list)
-                ? cur2.list[userEvent.items[cur1] - 1][userData.membership] || 0
-                : (cur2[userData.membership] || 0)
-              : 0
-            : 0)
-          , 0
-        ), 0
-      )
+    userEvent.cost = summary.total
   }
   // If add the new user data.
   if (!ver) {

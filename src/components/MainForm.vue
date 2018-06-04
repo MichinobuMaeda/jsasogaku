@@ -21,50 +21,55 @@
       ref="person"
       v-if="personEdit || (!user.ver)"
     >
-      <v-card color="grey lighten-3">
-        <v-card-text>
-          <div v-for="(text, index) in res.guideProfile" v-bind:key="index">
-            {{ text }}
-          </div>
-        </v-card-text>
-        <v-card-text>
-          <div v-for="(text, index) in res.guideAdminProfile" v-bind:key="index">
-            {{ text }}
-          </div>
-        </v-card-text>
-      </v-card>
+      <div class="guide"><v-icon :color="colorinfo">warning</v-icon> {{res.guideAdminProfile}}</div>
       <v-text-field
         v-if="accounts[me.uid].admin"
         label="Account ID"
         v-model="user.uid"
       ></v-text-field>
-      <v-text-field
-        :label="res.labelUserName"
-        v-model="user.name"
-        :rules="requiredRules"
-        required
-      ></v-text-field>
-      <v-select
-        :label="res.labelMembership"
-        v-model="user.membership"
-        :rules="requiredRules"
-        required
-        :items="$store.state.memberships"
-        item-value="key"
-      ></v-select>
-      <v-select
-        :label="res.labelBranch"
-        v-model="user.branch"
-        :rules="requiredRules"
-        required
-        :items="$store.state.branches"
-        item-value="key"
-      ></v-select>
+      <v-layout row wrap>
+        <v-flex xs12 hidden-xs-only class="column">
+          <div class="guide"><v-icon :color="colorinfo">info</v-icon> {{res.guideBranch}}</div>
+        </v-flex>
+        <v-flex xs12 sm6 md6 lg6 xl6 class="column">
+          <v-text-field
+            :label="res.labelUserName"
+            v-model="user.name"
+            :rules="requiredRules"
+            required
+          ></v-text-field>
+        </v-flex>
+        <v-flex xs12 hidden-sm-and-up class="column">
+          <div class="guide" xs><v-icon :color="colorinfo">info</v-icon> {{res.guideBranch}}</div>
+        </v-flex>
+        <v-flex xs7 sm3 md3 lg3 xl3 class="column">
+          <v-select
+            :label="res.labelMembership"
+            v-model="user.membership"
+            :rules="requiredRules"
+            required
+            :items="$store.state.memberships"
+            item-value="key"
+          ></v-select>
+        </v-flex>
+        <v-flex xs5 sm3 md3 lg3 xl3>
+          <v-select
+            :label="res.labelBranch"
+            v-model="user.branch"
+            :rules="requiredRules"
+            required
+            :items="$store.state.branches"
+            item-value="key"
+          ></v-select>
+        </v-flex>
+      </v-layout>
+      <div class="guide"><v-icon :color="colorinfo">info</v-icon> {{res.guideAddress}}</div>
       <v-text-field
         :label="res.labelZip"
         v-model="user.zip"
         :rules="zipRules"
         required
+        prefix="〒"
       ></v-text-field>
       <v-text-field
         :label="res.labelPref"
@@ -88,6 +93,8 @@
         :label="res.labelBldg"
         v-model="user.bldg"
       ></v-text-field>
+      <div class="guide"><v-icon :color="colorinfo">info</v-icon> {{res.guideContactMethod}}</div>
+      <div class="guide"><v-icon :color="colorinfo">info</v-icon> {{res.guideEmail}}</div>
       <v-text-field
         :label="res.labelEmail"
         v-model="user.email"
@@ -108,10 +115,12 @@
         :rules="faxRules"
         type="tel"
       ></v-text-field>
+      <div class="guide"><v-icon :color="colorinfo">info</v-icon> {{res.guideNote}}</div>
       <v-text-field
         :label="res.labelProfileNote"
         v-model="user.note"
         :multi-line="true"
+        :hint="res.guideNote"
       ></v-text-field>
       <v-btn
         color="primary"
@@ -171,7 +180,7 @@
       </div>
       <v-btn
         color="primary"
-        @click="toggleEditPerson"
+        @click="personEdit = true"
       >
         {{ res.labelEdit }}
       </v-btn>
@@ -232,6 +241,7 @@
             <v-form
               v-model="entryValid"
               ref="entry"
+              v-if="entryEdit"
             >
               <v-radio-group
                 v-model="selectedUserEvent.entry"
@@ -254,7 +264,7 @@
                     selectedUserEvent.cost.toLocaleString()
                   }}-</span>
                 </div>
-                <v-card color="grey lighten-3">
+                <v-card :color="lightgrey">
                   <v-card-text>
                     <div v-for="(text, index) in res.guideEventEntry" v-bind:key="index">
                       {{ text }}
@@ -307,7 +317,7 @@
                   :multi-line="true"
                 ></v-text-field>
                 <h4>{{ res.titleLectureEntry }}</h4>
-                <v-card color="grey lighten-3">
+                <v-card :color="lightgrey">
                   <v-card-text>
                     <div v-for="(text, index) in res.guideLectureEntry" v-bind:key="index">
                       {{ text }}
@@ -337,7 +347,7 @@
                   ></v-checkbox>
                 </div>
                 <h4>{{ res.titleExcursion }}</h4>
-                <v-card color="grey lighten-3">
+                <v-card :color="lightgrey">
                   <v-card-text>
                     <div v-for="(text, index) in res.guideExcursion" v-bind:key="index">
                       {{ text }}
@@ -369,6 +379,33 @@
                 {{ res.labelCancel }}
               </v-btn>
             </v-form>
+            <div
+              v-else
+            >
+              <table>
+                <tr>
+                  <th>項目</th>
+                  <th>金額</th>
+                </tr>
+                <tr
+                  v-for="item in summary.items"
+                  v-bind:key="item.key"
+                >
+                  <td>{{ item.key + '. ' + activeEvent.items.reduce((ret, cur) => cur.key === item.key ? cur.name : ret , '') }}</td>
+                  <td class="num">{{ item.cost ? item.cost.toLocaleString() : '-' }}</td>
+                </tr>
+                <tr>
+                  <th>合計</th>
+                  <td class="num">{{ summary.total.toLocaleString() }}</td>
+                </tr>
+              </table>
+              <v-btn
+                color="primary"
+                @click="entryEdit = true"
+              >
+                {{ res.labelEdit }}
+              </v-btn>
+            </div>
           </div>
         </div>
       </div>
@@ -396,55 +433,39 @@ h5 {
   font-size: 18px;
   margin: 6px 0 0 0;
 }
+.guide {
+  color: #5D4037;
+}
+.column {
+  padding-right: 6px;
+}
+table {
+  border-collapse: collapse;
+}
+th, td {
+  border: solid 1px black;
+  padding: 1px 2px 1px 2px;
+}
+td.num {
+  text-align: right;
+}
 </style>
 
 <script>
 import {
   SELECT_USER, REGEX_EMAIL, REGEX_ZIP, REGEX_TEL,
-  getActiveEvent
+  getActiveEvent, getUser, isEntry, getSummary
 } from '../common'
 import {onSubmitUser, getReceiptNo} from '../handlers'
-
-const getUser = (state) => {
-  const isAdmin = state.accounts[state.me.uid] &&
-    state.accounts[state.me.uid].admin
-  const isMyProfile = state.users.filter(user => user.uid === state.me.uid).length > 0
-  return state.users.reduce(
-    (ret, cur) => cur.key === state.site.activeUser
-      ? {
-        ...cur,
-        events: JSON.parse(JSON.stringify(cur.events || {}))
-      }
-      : ret,
-    {
-      key: null,
-      uid: isAdmin && isMyProfile ? null : state.me.uid,
-      name: '',
-      membership: null,
-      branch: null,
-      zip: '',
-      pref: '',
-      city: '',
-      street: '',
-      bldg: '',
-      tel: '',
-      fax: '',
-      email: isAdmin && isMyProfile ? '' : state.me.email,
-      note: '',
-      events: {},
-      ver: 0,
-      createdAt: null,
-      updatedAt: null
-    }
-  )
-}
 
 export default {
   data () {
     return {
       personEdit: false,
       personValid: false,
+      entryEdit: !isEntry(this.$store.state),
       entryValid: false,
+      summary: getSummary(this.$store.state, getUser(this.$store.state)),
       requestedReceiptNo: false,
       requiredRules: [
         v => !!v || this.res.validationRequired
@@ -471,18 +492,18 @@ export default {
   },
   methods: {
     async submit () {
-      await onSubmitUser(this.$store.state, this.user)
-      this.personEdit = false
+      this.summary = getSummary(this.$store.state, this.user)
+      await onSubmitUser(this.$store.state, this.user, this.summary)
       this.activeUser = this.$store.state.site.activeUser
+      this.personEdit = false
+      this.entryEdit = !isEntry(this.$store.state)
       window.scrollTo({top: 0, behavior: 'smooth'})
     },
     reset () {
       window.scrollTo({top: 0})
       this.user = getUser(this.$store.state)
       this.personEdit = false
-    },
-    toggleEditPerson () {
-      this.personEdit = !this.personEdit
+      this.entryEdit = !isEntry(this.$store.state)
     },
     addUser () {
       this.$store.commit(SELECT_USER, null)
@@ -515,6 +536,12 @@ export default {
     },
     selectedUserEvent () {
       return this.user.events[this.$store.state.site.activeEvent]
+    },
+    colorinfo () {
+      return 'brown'
+    },
+    lightgrey () {
+      return 'grey lighten-3'
     }
   }
 }

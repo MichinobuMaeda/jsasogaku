@@ -128,3 +128,79 @@ export const getFirestore = firebase => {
   firestore.settings({timestampsInSnapshots: true})
   return firestore
 }
+
+export const getUser = state => {
+  const isAdmin = state.accounts[state.me.uid] &&
+    state.accounts[state.me.uid].admin
+  const isMyProfile = state.users.filter(user => user.uid === state.me.uid).length > 0
+  return state.users.reduce(
+    (ret, cur) => cur.key === state.site.activeUser
+      ? {
+        ...cur,
+        events: JSON.parse(JSON.stringify(cur.events || {}))
+      }
+      : ret,
+    {
+      key: null,
+      uid: isAdmin && isMyProfile ? null : state.me.uid,
+      name: '',
+      membership: null,
+      branch: null,
+      zip: '',
+      pref: '',
+      city: '',
+      street: '',
+      bldg: '',
+      tel: '',
+      fax: '',
+      email: isAdmin && isMyProfile ? '' : state.me.email,
+      note: '',
+      events: {},
+      ver: 0,
+      createdAt: null,
+      updatedAt: null
+    }
+  )
+}
+
+export const isEntry = state => {
+  let user = getUser(state)
+  let entry = user.events[state.site.activeEvent]
+  return entry && entry.number
+}
+
+export const getSummary = (state, user) => {
+  let ret = {items: [], total: 0}
+  if (!state.site.activeEvent) { return ret }
+  let event = state.events.reduce(
+    (ret, cur) => cur.key === state.site.activeEvent ? cur : ret,
+    {}
+  )
+  if (!event) { return ret }
+  let entry = user.events[state.site.activeEvent]
+  if (!entry) { return ret }
+  if (!entry.number) { return ret }
+  if (!entry.entry) { return ret }
+  ['GA', 'lecture', 'excursion'].forEach(cat => {
+    ret.items = [
+      ...ret.items,
+      ...event.items.filter(item => item.category === cat && entry.items[item.key])
+        .map(item => {
+          let cost = getValue(
+            entry.items[item.key]
+              ? Array.isArray(item.list)
+                ? item.list[entry.items[item.key] - 1][user.membership] || 0
+                : (item[user.membership] || 0)
+              : 0
+          )
+          ret.total += cost
+          return {
+            key: item.key,
+            cost
+          }
+        }
+      )
+    ]
+  })
+  return ret
+}
