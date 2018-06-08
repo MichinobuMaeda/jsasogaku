@@ -200,13 +200,8 @@ export const getSummary = (state, user) => {
   if (!entry) { return ret }
   if (!entry.number) { return ret }
   if (!entry.entry) { return ret }
-  const sections = ['GA', 'lecture', 'excursion']
-  const sectionNames = {
-    GA: '',
-    lecture: state.resources.titleLectureEntry,
-    excursion: state.resources.titleExcursion
-  }
-  sections.forEach(section => {
+  const categories = ['GA', 'lecture', 'excursion']
+  categories.forEach(section => {
     ret.items = [
       ...ret.items,
       ...event.items.filter(item => item.category === section && entry.items[item.key])
@@ -220,13 +215,8 @@ export const getSummary = (state, user) => {
           )
           ret.total += cost
           return {
-            sectionName: sectionNames[section],
             key: item.key,
             value: entry.items[item.key],
-            name: item.name,
-            selection: Array.isArray(item.list)
-              ? item.list[entry.items[item.key] - 1].name
-              : null,
             cost
           }
         }
