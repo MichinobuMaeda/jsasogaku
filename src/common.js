@@ -27,9 +27,9 @@ export const TOGGLE_ACCOUNT_IS_ADMIN = 'toggleAccountIsAdmin'
 export const SET_ME = 'setMe'
 
 // Regexps
-export const REGEX_EMAIL = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/
+export const REGEX_EMAIL = /^(\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+|無し)$/
 export const REGEX_ZIP = /^[-0-9]+$/
-export const REGEX_TEL = /^[-0-9]+$/
+export const REGEX_TEL = /^([-0-9]+|無し)$/
 export const REGEX_INTEGER = /^-?[0-9]+$/
 
 // Pages
@@ -37,6 +37,8 @@ export const PAGE = {
   LOADING: 'Loading',
   SIGN_IN: 'SignIn',
   MAIN_FORM: 'MainForm',
+  USER_EDIT: 'UserEdit',
+  USER_SHOW: 'UserShow',
   SUMMARY: 'Summary',
   USER: 'User',
   ACCOUNT: 'Account',
@@ -129,7 +131,7 @@ export const getFirestore = firebase => {
   return firestore
 }
 
-export const getUser = state => {
+export const getUserForEdit = state => {
   const isAdmin = state.accounts[state.me.uid] &&
     state.accounts[state.me.uid].admin
   const isMyProfile = state.users.filter(user => user.uid === state.me.uid).length > 0
@@ -137,7 +139,30 @@ export const getUser = state => {
     (ret, cur) => cur.key === state.site.activeUser
       ? {
         ...cur,
-        events: JSON.parse(JSON.stringify(cur.events || {}))
+        // events: JSON.parse(JSON.stringify(cur.events))
+        events: cur.events
+          ? Object.keys(cur.events).reduce(
+            (ret2, cur2) => ({
+              ...ret2,
+              [cur2]: {
+                ...cur.events[cur2],
+                entry: cur.events[cur2].summary || cur.events[cur2].summary === undefined ? 1 : 0,
+                items: cur.events[cur2].summary
+                  ? cur.events[cur2].summary.items.reduce(
+                    (ret3, cur3) => ({...ret3, [cur3.key]: cur3.value}),
+                    {}
+                  )
+                  : state.site.activeEvent
+                    ? getActiveEvent(state).items.reduce(
+                      (ret4, cur4) => ({...ret4, [cur4.key]: cur4.default}),
+                      {}
+                    )
+                    : {}
+              }
+            }),
+            {}
+          )
+          : {}
       }
       : ret,
     {
@@ -163,12 +188,6 @@ export const getUser = state => {
   )
 }
 
-export const isEntry = state => {
-  let user = getUser(state)
-  let entry = user.events[state.site.activeEvent]
-  return entry && entry.number
-}
-
 export const getSummary = (state, user) => {
   let ret = {items: [], total: 0}
   if (!state.site.activeEvent) { return ret }
@@ -181,10 +200,16 @@ export const getSummary = (state, user) => {
   if (!entry) { return ret }
   if (!entry.number) { return ret }
   if (!entry.entry) { return ret }
-  ['GA', 'lecture', 'excursion'].forEach(cat => {
+  const sections = ['GA', 'lecture', 'excursion']
+  const sectionNames = {
+    GA: '',
+    lecture: state.resources.titleLectureEntry,
+    excursion: state.resources.titleExcursion
+  }
+  sections.forEach(section => {
     ret.items = [
       ...ret.items,
-      ...event.items.filter(item => item.category === cat && entry.items[item.key])
+      ...event.items.filter(item => item.category === section && entry.items[item.key])
         .map(item => {
           let cost = getValue(
             entry.items[item.key]
@@ -195,7 +220,13 @@ export const getSummary = (state, user) => {
           )
           ret.total += cost
           return {
+            sectionName: sectionNames[section],
             key: item.key,
+            value: entry.items[item.key],
+            name: item.name,
+            selection: Array.isArray(item.list)
+              ? item.list[entry.items[item.key] - 1].name
+              : null,
             cost
           }
         }
@@ -203,4 +234,90 @@ export const getSummary = (state, user) => {
     ]
   })
   return ret
+}
+
+export const getMyUserId = (state) => state.users.reduce(
+  (ret, cur) => cur.uid === state.me.uid ? cur.key : ret,
+  null
+)
+
+export const getCostSummary = state => {
+  const items = getActiveEvent(state).items
+    .filter(item => state.memberships.map(m => m.key)
+      .reduce(
+        (ret, cur) => ret + (item.list ? item.list.reduce(
+          (ret2, cur2) => ret2 + (cur2[cur] || 0),
+          0
+        ) : (item[cur] || 0)),
+        0
+      )
+    )
+    .map(item => item.key)
+  const getItem = (summary, item) => summary.items.reduce(
+      (ret, cur) => cur.key === item ? cur : ret,
+      null
+    )
+  const list = state.users
+    .filter(user => user.events &&
+      user.events[state.site.activeEvent] &&
+      user.events[state.site.activeEvent].summary)
+    .map(user => ({
+      ...user,
+      items: items.reduce(
+        (ret, cur) => getItem(user.events[state.site.activeEvent].summary, cur)
+          ? {...ret, [cur]: getItem(user.events[state.site.activeEvent].summary, cur).cost}
+          : ret,
+        {}
+      ),
+      total: user.events[state.site.activeEvent].summary.total
+    }))
+  const summary = list.reduce(
+    (ret, cur) => {
+      Object.keys(cur.items).forEach(key => {
+        ret[key] += (cur.items[key] || 0)
+      })
+      return ret
+    },
+    items.reduce((ret, cur) => ({...ret, [cur]: 0}), {})
+  )
+  return {
+    items,
+    list,
+    summary
+  }
+}
+
+export const getLectureSummary = state => {
+  const items = getActiveEvent(state).items
+    .filter(item => item.category === 'lecture')
+    .map(item => item.key)
+  const list = state.users
+    .filter(user => user.events &&
+      user.events[state.site.activeEvent] &&
+      user.events[state.site.activeEvent].summary)
+    .map(user => ({
+      ...user,
+      items: items.reduce(
+        (ret, cur) => user.events[state.site.activeEvent].summary.items.reduce(
+          (ret2, cur2) => cur2.key === cur ? 1 : ret2,
+          0
+        ) ? {...ret, [cur]: 1} : ret,
+        {}
+      )
+    }))
+    .filter(user => Object.keys(user.items).length)
+  const summary = list.reduce(
+    (ret, cur) => {
+      Object.keys(cur.items).forEach(key => {
+        ret[key] += (cur.items[key] || 0)
+      })
+      return ret
+    },
+    items.reduce((ret, cur) => ({...ret, [cur]: 0}), {})
+  )
+  return {
+    items,
+    list,
+    summary
+  }
 }

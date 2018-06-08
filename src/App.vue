@@ -4,7 +4,7 @@
       <v-container fluid>
         <div
           id="floated_menu"
-          v-if="!rightDrawer && page === PAGE.MAIN_FORM"
+          v-if="showMenuButton"
         >
           <v-btn fab dark small fixed color="primary"
             @click="rightDrawer = !rightDrawer"
@@ -14,7 +14,7 @@
         </div>
         <div
           id="floated_menu"
-          v-if="!rightDrawer && page !== PAGE.MAIN_FORM && page !== PAGE.LOADING && page !== PAGE.SIGN_IN"
+          v-else-if="!rightDrawer && page !== PAGE.LOADING && page !== PAGE.SIGN_IN"
         >
           <v-btn fab dark small fixed color="error"
             @click="cancel"
@@ -40,6 +40,8 @@
         <Loading v-if="page === PAGE.LOADING"/>
         <SignIn v-if="page === PAGE.SIGN_IN"/>
         <MainForm v-if="page === PAGE.MAIN_FORM"/>
+        <UserEdit v-if="page === PAGE.USER_EDIT"/>
+        <UserShow v-if="page === PAGE.USER_SHOW"/>
         <Summary v-if="page === PAGE.SUMMARY"/>
         <User v-if="page === PAGE.USER"/>
         <Account v-if="page === PAGE.ACCOUNT"/>
@@ -146,6 +148,11 @@
           {{ res.copyrightHolder }}
         </a>
       .</span>
+      <cookie-law
+        theme="blood-orange"
+          :message="res.labelEuCookieLawMessage"
+          :buttonText="res.labelEuCookieLawOK"
+      ></cookie-law>
     </v-footer>
   </v-app>
 </template>
@@ -203,12 +210,15 @@ table {
 </style>
 
 <script>
+import CookieLaw from 'vue-cookie-law'
 import {
   PAGE, SET_PAGE, BACK_PAGE
 } from './common'
 import Loading from './components/Loading'
 import SignIn from './components/SignIn'
 import MainForm from './components/MainForm'
+import UserEdit from './components/UserEdit'
+import UserShow from './components/UserShow'
 import Summary from './components/Summary'
 import User from './components/User'
 import Account from './components/Account'
@@ -299,9 +309,12 @@ export default {
   },
   name: 'App',
   components: {
+    CookieLaw,
     Loading,
     SignIn,
     MainForm,
+    UserEdit,
+    UserShow,
     Summary,
     User,
     Account,
@@ -326,6 +339,13 @@ export default {
     },
     nodeEnv () {
       return this.$store.state.site.nodeEnv
+    },
+    showMenuButton () {
+      return !this.rightDrawer && (
+        this.$store.state.site.page === PAGE.MAIN_FORM ||
+        this.$store.state.site.page === PAGE.USER_EDIT ||
+        this.$store.state.site.page === PAGE.USER_SHOW
+      )
     }
   }
 }

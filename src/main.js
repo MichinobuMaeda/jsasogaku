@@ -9,12 +9,13 @@ import Firebase from 'firebase'
 import 'firebase/firestore'
 import {
   DB_RESOURCES, EMAIL_FOR_SIGN_IN,
-  SET_LOADING_MSG, SET_ME, SET_RESOURCE, SET_PAGE, PAGE,
+  SET_LOADING_MSG, SET_ME, SET_RESOURCE,
   getFirestore
 } from './common'
 import loader from './loader'
 import mutations from './mutations'
 
+// Configure the Firebase client.
 const firebase = Firebase.initializeApp(config[process.env.NODE_ENV].firebase)
 
 // Configure the Vue app.
@@ -40,7 +41,7 @@ new Vue({
 
 // If The URL is the link of "sign in with email",
 if (firebase.auth().isSignInWithEmailLink(window.location.href)) {
-  // Do "sign in with email" and return to the app.
+  // Do "sign in with email" and reload the app.
   Promise.resolve().then(() => confirmSignIn(store))
 
 // If The URL is not the link of "sign in with email",
@@ -48,26 +49,17 @@ if (firebase.auth().isSignInWithEmailLink(window.location.href)) {
   // Get the auth info.
   firebase.auth().onAuthStateChanged(async function (auth) {
     // Set the account signed in.
+    store.commit(SET_ME, auth)
 
     // If no auth info,
     if (!auth) {
-      store.state.memberships = []
-      store.state.branches = []
-      store.state.events = []
-      store.state.accounts = {}
-      store.state.users = []
-      store.commit(SET_ME, auth)
-      store.commit(SET_PAGE, PAGE.LOADING)
-
       // Load data and show sign in page.
       Promise.resolve().then(() => loader.showSignInPage(config, store))
 
     // If auth info,
     } else {
-      store.commit(SET_ME, auth)
-
       // Load data and show main form page.
-      Promise.resolve().then(() => loader.showMainFormPage(config, store))
+      Promise.resolve().then(() => loader.showMain(config, store))
     }
   })
 }
@@ -96,7 +88,7 @@ const confirmSignIn = async (store) => {
     store.commit(SET_LOADING_MSG, store.state.resources.errorAuthFailed)
     window.alert(error)
   } finally {
-    // Return to the app.
+    // Reload the app.
     window.location.href = '/'
   }
 }

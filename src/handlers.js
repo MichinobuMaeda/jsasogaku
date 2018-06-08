@@ -1,5 +1,5 @@
 import {
-  DB_COUNTERS, DB_USERS, getValue, getActiveEvent, getFirestore
+  DB_COUNTERS, DB_USERS, getValue, getActiveEvent, getFirestore, getSummary
 } from './common'
 
 /**
@@ -67,7 +67,7 @@ export const onSubmitEvents = async (collection, event, memberships) => {
     data.items = data.items.reduce((ret, cur) => {
       let {key, ...item} = cur
       item.category = item.category.trim()
-      item.default = getValue(item.default.trim() || '')
+      item.default = getValue(('' + item.default).trim())
       if (item.list) {
         item.list = item.list.map(listItem => {
           listItem.name = listItem.name.trim()
@@ -96,32 +96,29 @@ export const onSubmitEvents = async (collection, event, memberships) => {
  * @param {object} state Vuex app state.
  * @param {object} activeUser
  */
-export const onSubmitUser = async (state, user, summary) => {
-  const {key, ver, ...userData} = user
+export const onSubmitUser = async (state, editedUser) => {
+  const {key, ...user} = editedUser
   const timestamp = new Date()
   const db = getFirestore(state.firebase)
 
   // Recalc the sum.
-  const activeEvent = getActiveEvent(state)
-  let userEvent = user.events[activeEvent.key]
-  if (userEvent) {
-    userEvent.cost = summary.total
+  if (user.events[state.site.activeEvent]) {
+    user.events[state.site.activeEvent] = {
+      number: user.events[state.site.activeEvent].number,
+      summary: user.events[state.site.activeEvent].entry
+        ? getSummary(state, editedUser)
+        : null
+    }
   }
   // If add the new user data.
-  if (!ver) {
+  if (!user.ver) {
     let docRef = db.collection(DB_USERS).doc()
-    console.log(docRef.id)
     await docRef.set({
-      ...userData,
-      ver: ver + 1,
+      ...user,
+      ver: user.ver + 1,
       createdAt: timestamp,
       updatedAt: timestamp
     })
-    console.log(docRef.id)
-    ++user.ver
-    user.createdAt = timestamp
-    user.updatedAt = timestamp
-    user.key = docRef.id
     state.site.activeUser = docRef.id
 
   // If update the user data.
@@ -135,7 +132,7 @@ export const onSubmitUser = async (state, user, summary) => {
         // If the user data restored.
         if (doc.exists) {
           // If the version of user data is invalid.
-          if (doc.data().ver !== ver) {
+          if (doc.data().ver !== user.ver) {
             /* eslint-disable no-throw-literal */
             throw state.resources.errorConflictUpdated
 
@@ -143,12 +140,13 @@ export const onSubmitUser = async (state, user, summary) => {
           } else {
             // Update the user data
             await transaction.update(docRef, {
-              ...userData,
-              ver: ver + 1,
+              ...user,
+              ver: user.ver + 1,
               updatedAt: timestamp
             })
-            ++user.ver
-            user.createdAt = timestamp
+            user.ver = user.ver + 1
+            user.updatedAt = timestamp
+            state.users = state.users.map(item => item.key === key ? {key, ...user} : item)
           }
 
         // If the user data is not exists.
@@ -172,9 +170,12 @@ export const onSubmitUser = async (state, user, summary) => {
 /**
  * Get new receipt number.
  * @param {object} state Vuex app state.
- * @param {object} user the user edited.
  */
-export const getReceiptNo = (state, user) => {
+export const getReceiptNo = (state) => {
+  let user = state.users.reduce(
+    (ret, cur) => cur.key === state.site.activeUser ? cur : ret,
+    null
+  )
   const activeEvent = getActiveEvent(state)
   const db = getFirestore(state.firebase)
   let docRefCounter = db.collection(DB_COUNTERS).doc(
@@ -196,13 +197,7 @@ export const getReceiptNo = (state, user) => {
         let events = {
           ...user.events,
           [activeEvent.key]: {
-            entry: 1,
-            number: count,
-            cost: 0,
-            items: activeEvent.items.reduce(
-              (ret, cur) => ({...ret, [cur.key]: cur.default}),
-              {}
-            )
+            number: count
           }
         }
         let ver = docUser.data().ver + 1

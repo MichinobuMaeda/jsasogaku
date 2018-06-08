@@ -58,7 +58,7 @@ td.account-id {
 </style>
 
 <script>
-import {BACK_PAGE, SELECT_USER} from '../common'
+import {SET_PAGE, PAGE, SELECT_USER} from '../common'
 // import {onSubmitAccounts} from '../handlers'
 
 export default {
@@ -74,7 +74,11 @@ export default {
   methods: {
     edit (key) {
       this.$store.commit(SELECT_USER, key)
-      this.$store.commit(BACK_PAGE)
+      if (key) {
+        this.$store.commit(SET_PAGE, PAGE.USER_SHOW)
+      } else {
+        this.$store.commit(SET_PAGE, PAGE.USER_EDIT)
+      }
       window.scrollTo({top: 0})
     }
   },

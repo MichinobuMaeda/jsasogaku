@@ -4,7 +4,7 @@ import {
   SET_LOADING_MSG, SET_RESOURCE, SET_PAGE,
   SET_MEMBERSHIPS, SET_BRANCHES, SET_EVENTS,
   SELECT_EVENT, SET_ACCOUNT, SET_USER, SELECT_USER, PAGE,
-  sleep, getFirestore
+  sleep, getFirestore, getMyUserId
 } from './common'
 
 /**
@@ -56,7 +56,7 @@ const showSignInPage = async (config, store) => {
  * @param {object} config
  * @param {Vuex.Store} store
  */
-const showMainFormPage = async (config, store) => {
+const showMain = async (config, store) => {
   const db = getFirestore(store.state.firebase)
   // Wait and get the registered account data -- synchronous.
   const account = await getRegisteredAccount(config, store, db)
@@ -67,21 +67,21 @@ const showMainFormPage = async (config, store) => {
   db.collection(DB_RESOURCES).onSnapshot(querySnapshot => {
     store.commit(SET_RESOURCE, querySnapshot)
     delete store.state.site.wait[DB_RESOURCES]
-    showMainForm(store)
+    showMainPage(store)
   })
   // Get the list of membership sorts -- asynchronous with realtime updates.
   store.state.site.wait[DB_MEMBERSHIPS] = true
   db.collection(DB_MEMBERSHIPS).onSnapshot(querySnapshot => {
     store.commit(SET_MEMBERSHIPS, querySnapshot)
     delete store.state.site.wait[DB_MEMBERSHIPS]
-    showMainForm(store)
+    showMainPage(store)
   })
   // Get the list of branches -- asynchronous with realtime updates.
   store.state.site.wait[DB_BRANCHES] = true
   db.collection(DB_BRANCHES).onSnapshot(querySnapshot => {
     store.commit(SET_BRANCHES, querySnapshot)
     delete store.state.site.wait[DB_BRANCHES]
-    showMainForm(store)
+    showMainPage(store)
   })
   // Get the list of events -- asynchronous with realtime updates.
   store.state.site.wait[DB_EVENTS] = true
@@ -94,7 +94,7 @@ const showMainFormPage = async (config, store) => {
       )
     )
     delete store.state.site.wait[DB_EVENTS]
-    showMainForm(store)
+    showMainPage(store)
   })
   // If the account has admin privilege.
   if (account.data().admin) {
@@ -105,7 +105,7 @@ const showMainFormPage = async (config, store) => {
         store.commit(SET_ACCOUNT, doc)
       })
       delete store.state.site.wait[DB_ACCOUNTS]
-      showMainForm(store)
+      showMainPage(store)
     })
     // Get the list of all users -- asynchronous with realtime updates.
     store.state.site.wait[DB_USERS] = true
@@ -119,7 +119,7 @@ const showMainFormPage = async (config, store) => {
     db.collection(DB_ACCOUNTS).doc(store.state.me.uid).onSnapshot(doc => {
       store.commit(SET_ACCOUNT, account)
       delete store.state.site.wait[DB_ACCOUNTS]
-      showMainForm(store)
+      showMainPage(store)
     })
     // Get the user data of the account -- asynchronous with realtime updates.
     store.state.site.wait[DB_USERS] = true
@@ -141,14 +141,11 @@ const getRegisteredAccount = async (config, store, db) => {
       let account = await db.collection(DB_ACCOUNTS).doc(store.state.me.uid).get()
       if (account && account.exists) {
         return account
-      } else {
-        store.commit(SET_LOADING_MSG, config.messages.regAccount)
-        sleep(500)
       }
     } catch (error) {
-      console.log(error)
-      return
     }
+    store.commit(SET_LOADING_MSG, config.messages.regAccount)
+    sleep(500)
   }
 }
 
@@ -160,26 +157,32 @@ const getRegisteredAccount = async (config, store, db) => {
 const setUsers = store => querySnapshot => {
   querySnapshot.forEach(function (doc) {
     store.commit(SET_USER, doc)
-    if (doc.data().uid === store.state.me.uid) {
+    if (!store.state.site.activeUser &&
+        doc.data().uid === store.state.me.uid) {
       store.commit(SELECT_USER, doc.id)
     }
   })
   delete store.state.site.wait[DB_USERS]
-  showMainForm(store)
+  showMainPage(store)
 }
 
 /**
  * Wait data loaded and show the main form page.
  * @param {Vuex.Store} store
  */
-const showMainForm = (store) => {
-  if (Object.keys(store.state.site.wait).length === 0) {
-    store.commit(SET_PAGE, PAGE.MAIN_FORM)
+const showMainPage = (store) => {
+  if (Object.keys(store.state.site.wait).length === 0 &&
+      store.state.site.page === PAGE.LOADING) {
+    if (!getMyUserId(store.state)) {
+      store.commit(SET_PAGE, PAGE.USER_EDIT)
+    } else {
+      store.commit(SET_PAGE, PAGE.USER_SHOW)
+    }
   }
 }
 
 export default {
   initialState,
   showSignInPage,
-  showMainFormPage
+  showMain
 }

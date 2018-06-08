@@ -177,7 +177,7 @@ export default {
         name: event.name,
         desc: event.desc,
         status: event.status,
-        items: event.items.map(item => ({...item}))
+        items: JSON.parse(JSON.stringify(event.items))
       })),
       requiredRules: [
         v => !!v || this.res.validationRequired
