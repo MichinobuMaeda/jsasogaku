@@ -148,23 +148,29 @@ const setEvents = (state, querySnapshot) => {
 /**
  * Set the list of users.
  * @param {object} state Vuex app state.
- * @param {object} doc
+ * @param {object} querySnapshot
  */
-const setUser = (state, doc) => {
+const setUsers = (state, querySnapshot) => {
   state.users = state.users || []
-  let user = {
-    key: doc.id,
-    ...doc.data()
-  }
-  user.events = user.events || {}
-  state.users = [
-    ...state.users.filter(user => user.key !== doc.id),
-    user
-  ]
+  querySnapshot.forEach(function (doc) {
+    let user = {
+      key: doc.id,
+      ...doc.data()
+    }
+    user.events = user.events || {}
+    state.users = [
+      ...state.users.filter(user => user.key !== doc.id),
+      user
+    ]
+    if (!state.site.activeUser &&
+        doc.data().uid === state.me.uid) {
+      state.site.activeUser = doc.id
+    }
+  })
 }
 
 /**
- * Set the list of accounts.
+ * Set an accounts.
  * @param {object} state Vuex app state.
  * @param {object} doc
  */
@@ -177,6 +183,24 @@ const setAccount = (state, doc) => {
     createdAt: doc.data().createdAt,
     updatedAt: doc.data().updatedAt
   }
+}
+
+/**
+ * Set the list of accounts.
+ * @param {object} state Vuex app state.
+ * @param {object} querySnapshot
+ */
+const setAccounts = (state, querySnapshot) => {
+  state.accounts = state.accounts || {}
+  querySnapshot.forEach(function (doc) {
+    state.accounts[doc.id] = {
+      admin: doc.data().admin,
+      email: doc.data().email,
+      valid: doc.data().valid,
+      createdAt: doc.data().createdAt,
+      updatedAt: doc.data().updatedAt
+    }
+  })
 }
 
 /**
@@ -205,7 +229,8 @@ export default {
   setMemberships,
   setBranches,
   setEvents,
-  setUser,
+  setUsers,
   setAccount,
+  setAccounts,
   setMe
 }

@@ -117,7 +117,8 @@ h5 {
 <script>
 import {
   SELECT_USER, REGEX_EMAIL, REGEX_ZIP, REGEX_TEL, SET_PAGE, PAGE,
-  getActiveEvent
+  DB_COUNTERS, DB_USERS,
+  getActiveEvent, getActiveUser, getFirestore
 } from '../common'
 import {getReceiptNo} from '../handlers'
 import UserProfile from './UserProfile'
@@ -164,9 +165,24 @@ export default {
     },
     async getReceiptNo () {
       this.requestedReceiptNo = true
-      await getReceiptNo(this.$store.state)
-      this.$store.commit(SET_PAGE, PAGE.MAIN_FORM)
-      window.scrollTo({top: 0})
+      try {
+        let db = getFirestore(this.$store.state.firebase)
+        let counters = db.collection(DB_COUNTERS)
+        let users = db.collection(DB_USERS)
+        let ReceiptNo = await getReceiptNo(
+          counters,
+          users,
+          this.$store.state.site.activeEvent,
+          getActiveUser(this.$store.state)
+        )
+        if (!ReceiptNo) {
+          window.alert(this.$store.state.resources.errorMissReceiptNoCounter)
+        }
+        this.$store.commit(SET_PAGE, PAGE.MAIN_FORM)
+        window.scrollTo({top: 0})
+      } catch (error) {
+        window.alert(error)
+      }
     },
     selectUser () {
       this.$store.commit(SELECT_USER, this.$store.state.site.activeUser)

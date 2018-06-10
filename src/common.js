@@ -20,8 +20,9 @@ export const SET_RESOURCE = 'setResources'
 export const SET_MEMBERSHIPS = 'setMemberships'
 export const SET_BRANCHES = 'setBranches'
 export const SET_EVENTS = 'setEvents'
-export const SET_USER = 'setUser'
+export const SET_USERS = 'setUsers'
 export const SET_ACCOUNT = 'setAccount'
+export const SET_ACCOUNTS = 'setAccounts'
 export const TOGGLE_ACCOUNT_IS_VALID = 'toggleAccountIdValid'
 export const TOGGLE_ACCOUNT_IS_ADMIN = 'toggleAccountIsAdmin'
 export const SET_ME = 'setMe'
@@ -31,6 +32,14 @@ export const REGEX_EMAIL = /^(\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+|無し)$
 export const REGEX_ZIP = /^[-0-9]+$/
 export const REGEX_TEL = /^([-0-9]+|無し)$/
 export const REGEX_INTEGER = /^-?[0-9]+$/
+
+// Exceptions
+export const EXCEPTION_CONFLICT = {
+  name: 'EXCEPTION_CONFLICT'
+}
+export const EXCEPTION_DELETED = {
+  name: 'EXCEPTION_DELETED'
+}
 
 // Pages
 export const PAGE = {
@@ -121,6 +130,9 @@ export const getValue = str => {
     return str
   }
 }
+
+export const getActiveUser = state => state.users.reduce(
+  (ret, cur) => cur.key === state.site.activeUser ? cur : ret, {})
 
 export const getActiveEvent = state => state.events.reduce(
   (ret, cur) => cur.key === state.site.activeEvent ? cur : ret, {})
@@ -226,7 +238,67 @@ export const getSummary = (state, user) => {
   return ret
 }
 
-export const getMyUserId = (state) => state.users.reduce(
+// Recalc the sum.
+export const updateUserSummary = (state, user) => {
+  const timestamp = new Date()
+  return user.events[state.site.activeEvent]
+    ? {
+      ...user,
+      events: {
+        ...user.events,
+        [state.site.activeEvent]: {
+          number: user.events[state.site.activeEvent].number,
+          summary: (user.events[state.site.activeEvent].entry
+            ? getSummary(state, user)
+            : null),
+          createdAt: user.events[state.site.activeEvent].createdAt || timestamp,
+          updatedAt: timestamp
+        }
+      }
+    }
+    : user
+}
+
+export const getSummaryTable = state => {
+  let activeEvent = state.events.reduce(
+    (cur, ret) => cur.key === state.site.activeEvent ? cur : ret,
+    {}
+  )
+  const categoryNames = {
+    GA: '',
+    lecture: state.resources.titleLectureEntry,
+    excursion: state.resources.titleExcursion
+  }
+  return state.users.reduce(
+    (ret, cur) => cur.key === state.site.activeUser
+      ? cur.events[activeEvent.key]
+        ? cur.events[activeEvent.key].summary
+          ? {
+            total: cur.events[activeEvent.key].summary.total,
+            items: cur.events[activeEvent.key].summary.items
+              .map(item => {
+                let ref = activeEvent.items.reduce(
+                  (ret, cur) => cur.key === item.key ? cur : ret,
+                  {}
+                )
+                return {
+                  ...item,
+                  name: ref.name,
+                  categoryName: categoryNames[ref.category],
+                  selection: ref.list
+                    ? ref.list[item.value - 1].name
+                    : null
+                }
+              })
+          }
+          : null
+        : ret
+      : ret
+    , null
+  )
+}
+
+export const getMyUserId = state => state.users.reduce(
   (ret, cur) => cur.uid === state.me.uid ? cur.key : ret,
   null
 )
@@ -311,3 +383,28 @@ export const getLectureSummary = state => {
     summary
   }
 }
+
+export const createEventData = (data, memberships) => ({
+  ...data,
+  items: data.items.reduce((ret, cur) => {
+    let {key, ...item} = cur
+    item.category = item.category.trim()
+    item.default = getValue(('' + item.default).trim())
+    if (item.list) {
+      item.list = item.list.map(listItem => {
+        listItem.name = listItem.name.trim()
+        memberships.forEach(m => {
+          listItem[m.key] = getValue(listItem[m.key] || '0')
+        })
+        return listItem
+      })
+    } else {
+      item.name = item.name.trim()
+      memberships.forEach(m => {
+        item[m.key] = getValue(item[m.key] || 0)
+      })
+    }
+    ret[key.trim()] = item
+    return ret
+  }, {})
+})

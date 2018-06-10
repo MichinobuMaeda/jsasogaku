@@ -233,6 +233,7 @@ export default {
     return {
       rightDrawer: false,
       PAGE,
+      nodeEnv: process.env.NODE_ENV,
       adminMenuItems: [
         {
           title: 'titleSummary',
@@ -336,9 +337,6 @@ export default {
     },
     me () {
       return this.$store.state.me
-    },
-    nodeEnv () {
-      return this.$store.state.site.nodeEnv
     },
     showMenuButton () {
       return !this.rightDrawer && (

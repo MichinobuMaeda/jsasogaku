@@ -199,15 +199,19 @@ export default {
     }
   },
   methods: {
-    submit (key) {
-      this.submitted = true
-      this.$store.commit(BACK_PAGE)
-      window.scrollTo({top: 0})
-      return onSubmitEvents(
-        getFirestore(this.$store.state.firebase).collection(DB_EVENTS),
-        this.list.reduce((ret, cur) => cur.key === key ? cur : ret, null),
-        this.$store.state.memberships
-      )
+    async submit (key) {
+      try {
+        this.submitted = true
+        await onSubmitEvents(
+          getFirestore(this.$store.state.firebase).collection(DB_EVENTS),
+          this.list.reduce((ret, cur) => cur.key === key ? cur : ret, null),
+          this.$store.state.memberships
+        )
+        this.$store.commit(BACK_PAGE)
+        window.scrollTo({top: 0})
+      } catch (error) {
+        window.alert(error)
+      }
     }
   },
   computed: {

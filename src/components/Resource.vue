@@ -47,15 +47,19 @@ export default {
     }
   },
   methods: {
-    submit () {
-      this.submitted = true
-      this.$store.commit(BACK_PAGE)
-      window.scrollTo({top: 0})
-      return onSubmitList(
-        getFirestore(this.$store.state.firebase).collection(DB_RESOURCES),
-        this.list,
-        true
-      )
+    async submit () {
+      try {
+        this.submitted = true
+        await onSubmitList(
+          getFirestore(this.$store.state.firebase).collection(DB_RESOURCES),
+          this.list,
+          true
+        )
+        this.$store.commit(BACK_PAGE)
+        window.scrollTo({top: 0})
+      } catch (error) {
+        window.alert(error)
+      }
     }
   },
   computed: {

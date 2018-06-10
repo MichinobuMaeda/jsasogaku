@@ -150,10 +150,11 @@
 
 <script>
 import {
-  REGEX_EMAIL, REGEX_ZIP, REGEX_TEL, SET_PAGE, PAGE,
-  getUserForEdit
+  REGEX_EMAIL, REGEX_ZIP, REGEX_TEL, SET_PAGE, PAGE, SELECT_USER,
+  DB_USERS, EXCEPTION_CONFLICT, EXCEPTION_DELETED,
+  getUserForEdit, updateUserSummary, getFirestore
 } from '../common'
-import {onSubmitUser} from '../handlers'
+import {onSubmitNewUser, onSubmitUser} from '../handlers'
 import UserProfile from './UserProfile'
 import UserSummary from './UserSummary'
 
@@ -185,7 +186,33 @@ export default {
   },
   methods: {
     async submit () {
-      await onSubmitUser(this.$store.state, this.user)
+      let db = getFirestore(this.$store.state.firebase)
+      let collection = db.collection(DB_USERS)
+      if (this.user.ver) {
+        try {
+          let db = getFirestore(this.$store.state.firebase)
+          let collection = db.collection(DB_USERS)
+          await onSubmitUser(
+            collection,
+            updateUserSummary(this.$store.state, this.user)
+          )
+          this.$store.commit(SET_PAGE, PAGE.USER_SHOW)
+          window.scrollTo({top: 0, behavior: 'smooth'})
+        } catch (error) {
+          if (error.code === 'permission-denied' ||
+              error.name === EXCEPTION_DELETED.name) {
+            window.alert(this.$store.state.resources.errorConflictDeleted)
+          } else if (error.name === EXCEPTION_CONFLICT.name) {
+            window.alert(this.$store.state.resources.errorConflictUpdated)
+          } else {
+            window.alert(error)
+          }
+          window.location.href = window.location.href
+        }
+      } else {
+        let id = await onSubmitNewUser(collection, this.user)
+        this.$store.commit(SELECT_USER, id)
+      }
       this.$store.commit(SET_PAGE, PAGE.USER_SHOW)
       window.scrollTo({top: 0, behavior: 'smooth'})
     },

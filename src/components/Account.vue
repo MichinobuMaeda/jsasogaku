@@ -121,14 +121,18 @@ export default {
         item.key === key ? {...item, admin: !item.admin} : item
       )
     },
-    submit () {
-      this.submitted = true
-      this.$store.commit(BACK_PAGE)
-      window.scrollTo({top: 0})
-      return onSubmitAccounts(
-        getFirestore(this.$store.state.firebase).collection(DB_ACCOUNTS),
-        this.list
-      )
+    async submit () {
+      try {
+        this.submitted = true
+        await onSubmitAccounts(
+          getFirestore(this.$store.state.firebase).collection(DB_ACCOUNTS),
+          this.list
+        )
+        this.$store.commit(BACK_PAGE)
+        window.scrollTo({top: 0})
+      } catch (error) {
+        window.alert(error)
+      }
     }
   },
   computed: {
