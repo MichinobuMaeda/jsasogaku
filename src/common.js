@@ -123,8 +123,10 @@ export const getValue = str => {
       return parseInt(str, 10)
     } else if (str.match(/^-?\d*.\d*$/) && str.match(/\d/)) {
       return parseFloat(str)
-    } else if (str.match(/^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d/)) {
-      return parseInt(str, 10)
+    } else if (str.match(/^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d(.\d+)?(Z|[-+][\d:]+)$/)) {
+      return new Date(str)
+    } else {
+      return str
     }
   } catch (error) {
     return str
@@ -132,10 +134,10 @@ export const getValue = str => {
 }
 
 export const getActiveUser = state => state.users.reduce(
-  (ret, cur) => cur.key === state.site.activeUser ? cur : ret, {})
+  (ret, cur) => cur.key === state.site.activeUser ? cur : ret, null)
 
 export const getActiveEvent = state => state.events.reduce(
-  (ret, cur) => cur.key === state.site.activeEvent ? cur : ret, {})
+  (ret, cur) => cur.key === state.site.activeEvent ? cur : ret, null)
 
 export const getFirestore = firebase => {
   const firestore = firebase.firestore()

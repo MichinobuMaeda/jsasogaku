@@ -214,7 +214,6 @@ export default {
           updateUserSummary(this.$store.state, this.user)
         )
         this.$store.commit(SET_PAGE, PAGE.USER_SHOW)
-        window.scrollTo({top: 0, behavior: 'smooth'})
       } catch (error) {
         if (error.code === 'permission-denied' ||
             error.name === EXCEPTION_DELETED.name) {

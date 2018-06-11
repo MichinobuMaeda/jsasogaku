@@ -1,5 +1,6 @@
 import {
-  sleep, padDigits, createSparseList, orderByKey
+  sleep, padDigits, createSparseList, orderByKey, getValue,
+  getActiveUser, getActiveEvent, getFirestore
 } from '@/common'
 
 describe('sleep', () => {
@@ -84,5 +85,132 @@ describe('orderByKey', () => {
       {key: '001', name: 'name01', val: 'val001'},
       {key: '002', name: 'name02', val: 'val002'}
     ])
+  })
+})
+
+describe('getValue', () => {
+  it('should return the boolean value from a boolean like string.', () => {
+    expect(getValue('true')).toEqual(true)
+    expect(getValue('false')).toEqual(false)
+    expect(getValue('tRue')).toEqual(true)
+    expect(getValue('faLse')).toEqual(false)
+    expect(getValue('on')).toEqual(true)
+    expect(getValue('off')).toEqual(false)
+    expect(getValue('oN')).toEqual(true)
+    expect(getValue('oFf')).toEqual(false)
+    expect(getValue('yes')).toEqual(true)
+    expect(getValue('no')).toEqual(false)
+    expect(getValue('yEs')).toEqual(true)
+    expect(getValue('nO')).toEqual(false)
+    expect(getValue('t')).toEqual(true)
+    expect(getValue('f')).toEqual(false)
+    expect(getValue('T')).toEqual(true)
+    expect(getValue('F')).toEqual(false)
+    expect(getValue('y')).toEqual(true)
+    expect(getValue('n')).toEqual(false)
+    expect(getValue('Y')).toEqual(true)
+    expect(getValue('N')).toEqual(false)
+    expect(getValue('有')).toEqual(true)
+    expect(getValue('無')).toEqual(false)
+    expect(getValue('◯')).toEqual(true)
+    expect(getValue('×')).toEqual(false)
+  })
+  it('should return the number value from a numeric string.', () => {
+    expect(getValue('0')).toEqual(0)
+    expect(getValue('1')).toEqual(1)
+    expect(getValue('10')).toEqual(10)
+    expect(getValue('-1')).toEqual(-1)
+    expect(getValue('-10')).toEqual(-10)
+    expect(getValue('1.0')).toEqual(1.0)
+    expect(getValue('-1.0')).toEqual(-1.0)
+    expect(getValue('1.')).toEqual(1.0)
+    expect(getValue('-1.')).toEqual(-1.0)
+    expect(getValue('0.1')).toEqual(0.1)
+    expect(getValue('-0.1')).toEqual(-0.1)
+    expect(getValue('.1')).toEqual(0.1)
+    expect(getValue('-.1')).toEqual(-0.1)
+  })
+  it('should return the timestamp value of a ISO format string.', () => {
+    expect(
+      getValue('2017-12-31T13:58:59.123Z')
+    ).toEqual(
+      new Date('2017-12-31T13:58:59.123Z')
+    )
+    expect(
+      getValue('2017-12-31T13:58:59Z')
+    ).toEqual(
+      new Date('2017-12-31T13:58:59.000Z')
+    )
+    expect(
+      getValue('2017-12-31T13:58:59.123+09:00')
+    ).toEqual(
+      new Date('2017-12-31T04:58:59.123Z')
+    )
+    expect(
+      getValue('2017-12-31T13:58:59.123-09:00')
+    ).toEqual(
+      new Date('2017-12-31T22:58:59.123Z')
+    )
+  })
+  it('should ignore falsy value.', () => {
+    expect(getValue(null)).toBeNull()
+    expect(getValue(false)).toEqual(false)
+    expect(getValue('')).toEqual('')
+    expect(getValue(undefined)).toEqual(undefined)
+  })
+  it('should ignore unsupported format.', () => {
+    expect(getValue('aaa')).toEqual('aaa')
+    expect(getValue('2017-12-31T13:58:59+')).toEqual('2017-12-31T13:58:59+')
+    expect(getValue(1)).toEqual(1)
+  })
+})
+
+describe('getActiveUser', () => {
+  it('should return the selected user if exists.', () => {
+    let state = {
+      site: { activeUser: 'u01' },
+      users: [
+        { key: 'u01' },
+        { key: 'u02' }
+      ]
+    }
+    expect(getActiveUser(state)).toEqual({ key: 'u01' })
+    state.site.activeUser = 'u00'
+    expect(getActiveUser(state)).toBeNull()
+    state.site.activeUser = null
+    expect(getActiveUser(state)).toBeNull()
+  })
+})
+
+describe('getActiveEvent', () => {
+  it('should return the selected event if exists.', () => {
+    let state = {
+      site: { activeEvent: 'e01' },
+      events: [
+        { key: 'e01' },
+        { key: 'e02' }
+      ]
+    }
+    expect(getActiveEvent(state)).toEqual({ key: 'e01' })
+    state.site.activeEvent = 'e00'
+    expect(getActiveEvent(state)).toBeNull()
+    state.site.activeEvent = null
+    expect(getActiveEvent(state)).toBeNull()
+  })
+})
+
+describe('getFirestore', () => {
+  it('should get the firestore client instance and set some parameters.', () => {
+    let mockFn = jest.fn()
+    getFirestore({
+      firestore: () => ({
+        settings: mockFn
+      })
+    })
+    expect(mockFn.mock.calls.length).toEqual(1)
+    expect(mockFn.mock.calls[0].length).toEqual(1)
+    expect(mockFn.mock.calls[0][0]).toEqual({
+      timestampsInSnapshots: true
+    })
   })
 })

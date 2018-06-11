@@ -151,15 +151,15 @@ const setEvents = (state, querySnapshot) => {
  * @param {object} querySnapshot
  */
 const setUsers = (state, querySnapshot) => {
-  state.users = state.users || []
+  let list = []
   querySnapshot.forEach(function (doc) {
     let user = {
       key: doc.id,
       ...doc.data()
     }
     user.events = user.events || {}
-    state.users = [
-      ...state.users.filter(user => user.key !== doc.id),
+    list = [
+      ...list.filter(user => user.key !== doc.id),
       user
     ]
     if (!state.site.activeUser &&
@@ -167,6 +167,7 @@ const setUsers = (state, querySnapshot) => {
       state.site.activeUser = doc.id
     }
   })
+  state.users = list
 }
 
 /**
@@ -175,7 +176,7 @@ const setUsers = (state, querySnapshot) => {
  * @param {object} doc
  */
 const setAccount = (state, doc) => {
-  state.accounts = state.accounts || []
+  state.accounts = state.accounts || {}
   state.accounts[doc.id] = {
     admin: doc.data().admin,
     email: doc.data().email,
@@ -191,9 +192,9 @@ const setAccount = (state, doc) => {
  * @param {object} querySnapshot
  */
 const setAccounts = (state, querySnapshot) => {
-  state.accounts = state.accounts || {}
+  let list = {}
   querySnapshot.forEach(function (doc) {
-    state.accounts[doc.id] = {
+    list[doc.id] = {
       admin: doc.data().admin,
       email: doc.data().email,
       valid: doc.data().valid,
@@ -201,6 +202,7 @@ const setAccounts = (state, querySnapshot) => {
       updatedAt: doc.data().updatedAt
     }
   })
+  state.accounts = list
 }
 
 /**
