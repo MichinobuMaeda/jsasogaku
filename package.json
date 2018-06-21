@@ -16,6 +16,7 @@
     "deploy-dev": "cp src/config-dev.js src/config.js; node build/build.js; firebase deploy; cp src/config-prod.js src/config.js"
   },
   "dependencies": {
+    "babel-polyfill": "^6.26.0",
     "es6-promise": "^4.2.4",
     "firebase": "^4.13.1",
     "npm": "^6.0.1",
