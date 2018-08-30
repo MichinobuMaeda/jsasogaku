@@ -1,7 +1,7 @@
 <template>
   <div>
     <h2><v-icon dark>list</v-icon> {{ res.titleSummary }}</h2>
-    <v-card color="grey lighten-3">
+    <v-card color="COLOR.CARD">
       <v-card-text>
         <div v-for="(text, index) in res.guideAdminSummary" v-bind:key="index">
           {{ text }}
@@ -30,7 +30,7 @@
               <th>{{ res.labelMembership }}</th>
               <th>{{ res.labelUserName }}</th>
               <th
-                v-for="(item, index) in costs.items"
+                v-for="(item, index) in costSummaryList.items"
                 v-bind:key="index"
               >
                 {{ item }}
@@ -38,15 +38,15 @@
               <th>{{ res.labelSum }}</th>
             </tr>
             <tr
-              v-for="user in costs.list"
+              v-for="user in costSummaryList.list"
               v-bind:key="user.key"
             >
-              <td>{{ branches[user.branch] }}</td>
-              <td>{{ memberships[user.membership] }}</td>
+              <td>{{ branch(user.branch) }}</td>
+              <td>{{ membership(user.membership) }}</td>
               <td>{{ user.name }}</td>
               <td
                 class="num"
-                v-for="(item, index) in costs.items"
+                v-for="(item, index) in costSummaryList.items"
                 v-bind:key="index"
               >
                 {{ user.items[item] ? user.items[item].toLocaleString() : '' }}
@@ -61,15 +61,15 @@
               <th colspan="3">{{ res.labelSumTotal }}</th>
               <td
                 class="num"
-                v-for="(item, index) in costs.items"
+                v-for="(item, index) in costSummaryList.items"
                 v-bind:key="index"
               >
-                {{ costs.summary[item].toLocaleString() }}
+                {{ costSummaryList.summary[item].toLocaleString() }}
               </td>
               <td
                 class="num"
               >
-                {{ Object.values(costs.summary).reduce((ret, cur) => ret += cur, 0).toLocaleString() }}
+                {{ Object.values(costSummaryList.summary).reduce((ret, cur) => ret += cur, 0).toLocaleString() }}
               </td>
             </tr>
           </table>
@@ -82,7 +82,7 @@
               <th>{{ res.labelMembership }}</th>
               <th>{{ res.labelUserName }}</th>
               <th
-                v-for="(item, index) in lectures.items"
+                v-for="(item, index) in lectureSummaryList.items"
                 v-bind:key="index"
               >
                 {{ item }}
@@ -92,15 +92,15 @@
               </th>
             </tr>
             <tr
-              v-for="user in lectures.list"
+              v-for="user in lectureSummaryList.list"
               v-bind:key="user.key"
             >
-              <td>{{ branches[user.branch] }}</td>
-              <td>{{ memberships[user.membership] }}</td>
+              <td>{{ branch(user.branch) }}</td>
+              <td>{{ membership(user.membership) }}</td>
               <td>{{ user.name }}</td>
               <td
                 class="num"
-                v-for="(item, index) in lectures.items"
+                v-for="(item, index) in lectureSummaryList.items"
                 v-bind:key="index"
               >
                 {{ user.items[item] || '' }}
@@ -115,15 +115,15 @@
               <th colspan="3">{{ res.labelSumTotal }}</th>
               <td
                 class="num"
-                v-for="(item, index) in lectures.items"
+                v-for="(item, index) in lectureSummaryList.items"
                 v-bind:key="index"
               >
-                {{ lectures.summary[item] }}
+                {{ lectureSummaryList.summary[item] }}
               </td>
               <td
                 class="num"
               >
-                {{ Object.values(lectures.summary).reduce((ret, cur) => ret += cur, 0) }}
+                {{ Object.values(lectureSummaryList.summary).reduce((ret, cur) => ret += cur, 0) }}
               </td>
             </tr>
           </table>
@@ -154,8 +154,8 @@
                       (ret, cur) => cur.key === item.key ? true : ret, false
                     )"
             >
-              <td>{{ branches[user.branch] }}</td>
-              <td>{{ memberships[user.membership] }}</td>
+              <td>{{ branch(user.branch) }}</td>
+              <td>{{ membership(user.membership) }}</td>
               <td>{{ user.name }}</td>
               <td
                 class="value"
@@ -193,41 +193,16 @@ td.value {
 </style>
 
 <script>
-import {
-  getActiveEvent, getCostSummary, getLectureSummary
-} from '../common'
+import {mapGetters} from 'vuex'
+import {GETTERS} from '../constants'
 
 export default {
   data () {
-    return {
-      costs: getCostSummary(this.$store.state),
-      lectures: getLectureSummary(this.$store.state)
-    }
+    return {}
   },
-  methods: {
-  },
+  methods: {},
   computed: {
-    res () {
-      return this.$store.state.resources
-    },
-    users () {
-      return this.$store.state.users
-    },
-    memberships () {
-      return this.$store.state.memberships.reduce(
-        (ret, cur) => ({...ret, [cur.key]: cur.text}),
-        {}
-      )
-    },
-    branches () {
-      return this.$store.state.branches.reduce(
-        (ret, cur) => ({...ret, [cur.key]: cur.text}),
-        {}
-      )
-    },
-    activeEvent () {
-      return getActiveEvent(this.$store.state)
-    }
+    ...mapGetters(GETTERS)
   }
 }
 </script>

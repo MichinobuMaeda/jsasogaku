@@ -1,7 +1,7 @@
 <template>
   <div>
     <h2><v-icon dark>people</v-icon> {{ res.labelBranch }}</h2>
-    <v-card color="grey lighten-3">
+    <v-card color="COLOR.CARD">
       <v-card-text>
         <div v-for="(text, index) in res.guideAdminBranch" v-bind:key="index">
           {{ text }}
@@ -25,7 +25,9 @@
 </template>
 
 <script>
-import {BACK_PAGE, DB_BRANCHES, createSparseList, getFirestore} from '../common'
+import {mapGetters} from 'vuex'
+import {M, DB, GETTERS} from '../constants'
+import {createSparseList} from '../common'
 import {onSubmitList} from '../handlers'
 
 export default {
@@ -45,10 +47,10 @@ export default {
       try {
         this.submitted = true
         await onSubmitList(
-          getFirestore(this.$store.state.firebase).collection(DB_BRANCHES),
+          this.collection(DB.BRANCHES),
           this.list
         )
-        this.$store.commit(BACK_PAGE)
+        this.$store.commit(M.BACK_PAGE)
         window.scrollTo({top: 0})
       } catch (error) {
         window.alert(error)
@@ -56,9 +58,7 @@ export default {
     }
   },
   computed: {
-    res () {
-      return this.$store.state.resources
-    }
+    ...mapGetters(GETTERS)
   }
 }
 </script>

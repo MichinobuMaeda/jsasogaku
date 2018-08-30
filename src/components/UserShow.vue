@@ -14,7 +14,7 @@
     </v-radio-group>
     <h2>
       <v-icon dark>face</v-icon>
-      {{ user.uid === me.uid ? res.titleProfile : res.titleUserList }}
+      {{ activeUser.uid === me.uid ? res.titleProfile : res.titleUserList }}
     </h2>
     <UserProfile/>
     <v-btn
@@ -23,6 +23,13 @@
     >
       {{ res.labelEdit }}
     </v-btn>
+        <v-card :color="COLOR.CARD">
+          <v-card-text>
+            <div v-for="(text, index) in res.guideRegistered" v-bind:key="index">
+              {{ text }}
+            </div>
+          </v-card-text>
+        </v-card>
     <div
       v-if="!accounts[me.uid].admin"
     >
@@ -54,8 +61,8 @@
         {{ activeEvent.desc }}
       </p>
       <div
-        v-if="!user.events ||
-              !selectedUserEvent"
+        v-if="!activeUser.events ||
+              !selectedUserEvent(activeUser)"
       >
         <v-btn
           color="primary"
@@ -71,7 +78,7 @@
         <div class="summary">
           {{ res.labelReceiptNo }}
           <span class="big-number"> {{
-            selectedUserEvent.number
+            selectedUserEvent(activeUser).number
           }}</span>
         </div>
         <UserSummary/>
@@ -115,11 +122,8 @@ h5 {
 </style>
 
 <script>
-import {
-  SELECT_USER, REGEX_EMAIL, REGEX_ZIP, REGEX_TEL, SET_PAGE, PAGE,
-  DB_COUNTERS, DB_USERS,
-  getActiveEvent, getActiveUser, getFirestore
-} from '../common'
+import {mapGetters} from 'vuex'
+import {M, PAGE, DB, GETTERS} from '../constants'
 import {getReceiptNo} from '../handlers'
 import UserProfile from './UserProfile'
 import UserSummary from './UserSummary'
@@ -127,65 +131,45 @@ import UserSummary from './UserSummary'
 export default {
   data () {
     return {
-      requestedReceiptNo: false,
-      requiredRules: [
-        v => !!v || this.res.validationRequired
-      ],
-      zipRules: [
-        v => !!v || this.res.validationRequired,
-        v => REGEX_ZIP.test(v) || this.res.validationZipNo
-      ],
-      telRules: [
-        v => !!v || this.res.validationRequired,
-        v => !v || REGEX_TEL.test(v) || this.res.validationPhoneNo
-      ],
-      faxRules: [
-        v => !v || REGEX_TEL.test(v) || this.res.validationPhoneNo
-      ],
-      emailRules: [
-        v => !!v || this.res.validationRequired,
-        v => !v || REGEX_EMAIL.test(v) ||
-             this.res.validationEmailFormat
-      ]
+      requestedReceiptNo: false
     }
   },
   methods: {
     editUser () {
-      this.$store.commit(SET_PAGE, PAGE.USER_EDIT)
+      this.$store.commit(M.SET_PAGE, PAGE.USER_EDIT)
       window.scrollTo({top: 0})
     },
     editEntry () {
-      this.$store.commit(SET_PAGE, PAGE.MAIN_FORM)
+      this.$store.commit(M.SET_PAGE, PAGE.MAIN_FORM)
       window.scrollTo({top: 0})
     },
     addUser () {
-      this.$store.commit(SELECT_USER, null)
-      this.$store.commit(SET_PAGE, PAGE.USER_EDIT)
+      this.$store.commit(M.SELECT_USER, null)
+      this.$store.commit(M.SET_PAGE, PAGE.USER_EDIT)
       window.scrollTo({top: 0})
     },
     async getReceiptNo () {
       this.requestedReceiptNo = true
       try {
-        let db = getFirestore(this.$store.state.firebase)
-        let counters = db.collection(DB_COUNTERS)
-        let users = db.collection(DB_USERS)
+        let counters = this.collection(DB.COUNTERS)
+        let users = this.collection(DB.USERS)
         let ReceiptNo = await getReceiptNo(
           counters,
           users,
           this.$store.state.site.activeEvent,
-          getActiveUser(this.$store.state)
+          this.activeUser
         )
         if (!ReceiptNo) {
           window.alert(this.$store.state.resources.errorMissReceiptNoCounter)
         }
-        this.$store.commit(SET_PAGE, PAGE.MAIN_FORM)
+        this.$store.commit(M.SET_PAGE, PAGE.MAIN_FORM)
         window.scrollTo({top: 0})
       } catch (error) {
         window.alert(error)
       }
     },
     selectUser () {
-      this.$store.commit(SELECT_USER, this.$store.state.site.activeUser)
+      this.$store.commit(M.SELECT_USER, this.$store.state.site.activeUser)
     }
   },
   components: {
@@ -193,36 +177,7 @@ export default {
     UserSummary
   },
   computed: {
-    res () {
-      return this.$store.state.resources
-    },
-    accounts () {
-      return this.$store.state.accounts
-    },
-    users () {
-      return this.$store.state.users
-    },
-    me () {
-      return this.$store.state.me
-    },
-    user () {
-      return this.$store.state.users.reduce(
-        (ret, cur) => cur.key === this.$store.state.site.activeUser ? cur : ret
-        , {}
-      )
-    },
-    activeEvent () {
-      return getActiveEvent(this.$store.state)
-    },
-    selectedUserEvent () {
-      return this.user.events[this.$store.state.site.activeEvent]
-    },
-    colorinfo () {
-      return 'brown'
-    },
-    lightgrey () {
-      return 'grey lighten-3'
-    }
+    ...mapGetters(GETTERS)
   }
 }
 </script>

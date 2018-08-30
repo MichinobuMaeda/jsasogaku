@@ -1,11 +1,12 @@
-import {PAGE, orderByKey} from './common'
+import {PAGE} from '../constants'
+import {orderByKey} from '../common'
 
 /**
  * Set the next page and save the history.
  * @param {object} state Vuex app state.
  * @param {object} page
  */
-const setPage = (state, page) => {
+export const setPage = (state, page) => {
   if (page && state.site.page !== page) {
     state.site = {
       ...state.site,
@@ -26,7 +27,7 @@ const setPage = (state, page) => {
  * Back to the previous page.
  * @param {object} state Vuex app state.
  */
-const backPage = state => {
+export const backPage = state => {
   let prev = state.site.prev.pop()
   state.site = {
     ...state.site,
@@ -40,7 +41,7 @@ const backPage = state => {
  * @param {object} state Vuex app state.
  * @param {object} msg
  */
-const setLoadingMessage = (state, msg) => {
+export const setLoadingMessage = (state, msg) => {
   state.site = {
     ...state.site,
     loadingMessage: msg
@@ -52,7 +53,7 @@ const setLoadingMessage = (state, msg) => {
  * @param {object} state Vuex app state.
  * @param {object} key
  */
-const selectUser = (state, key) => {
+export const selectUser = (state, key) => {
   state.site = {
     ...state.site,
     activeUser: key
@@ -64,7 +65,7 @@ const selectUser = (state, key) => {
  * @param {object} state Vuex app state.
  * @param {object} key
  */
-const selectEvent = (state, key) => {
+export const selectEvent = (state, key) => {
   state.site = {
     ...state.site,
     activeEvent: key
@@ -76,7 +77,7 @@ const selectEvent = (state, key) => {
  * @param {object} state Vuex app state.
  * @param {object} querySnapshot
  */
-const setResources = (state, querySnapshot) => {
+export const setResources = (state, querySnapshot) => {
   state.resources = {}
   querySnapshot.forEach(function (doc) {
     state.resources[doc.id] = doc.data().text
@@ -88,7 +89,7 @@ const setResources = (state, querySnapshot) => {
  * @param {object} state Vuex app state.
  * @param {object} querySnapshot
  */
-const setMemberships = (state, querySnapshot) => {
+export const setMemberships = (state, querySnapshot) => {
   let arr = []
   querySnapshot.forEach(function (doc) {
     arr.push({
@@ -104,7 +105,7 @@ const setMemberships = (state, querySnapshot) => {
  * @param {object} state Vuex app state.
  * @param {object} querySnapshot
  */
-const setBranches = (state, querySnapshot) => {
+export const setBranches = (state, querySnapshot) => {
   let arr = []
   querySnapshot.forEach(function (doc) {
     arr.push({
@@ -120,7 +121,7 @@ const setBranches = (state, querySnapshot) => {
  * @param {object} state Vuex app state.
  * @param {object} querySnapshot
  */
-const setEvents = (state, querySnapshot) => {
+export const setEvents = (state, querySnapshot) => {
   let arr = []
   querySnapshot.forEach(function (doc) {
     arr.push({
@@ -143,6 +144,13 @@ const setEvents = (state, querySnapshot) => {
     })
   })
   state.events = orderByKey(arr).reverse()
+  selectEvent(
+    state,
+    state.events.reduce(
+      (ret, event) => event.status === 'active' ? event.key : ret,
+      null
+    )
+  )
 }
 
 /**
@@ -150,7 +158,7 @@ const setEvents = (state, querySnapshot) => {
  * @param {object} state Vuex app state.
  * @param {object} querySnapshot
  */
-const setUsers = (state, querySnapshot) => {
+export const setUsers = (state, querySnapshot) => {
   let list = []
   querySnapshot.forEach(function (doc) {
     let user = {
@@ -175,7 +183,7 @@ const setUsers = (state, querySnapshot) => {
  * @param {object} state Vuex app state.
  * @param {object} doc
  */
-const setAccount = (state, doc) => {
+export const setAccount = (state, doc) => {
   state.accounts = state.accounts || {}
   state.accounts[doc.id] = {
     admin: doc.data().admin,
@@ -191,7 +199,7 @@ const setAccount = (state, doc) => {
  * @param {object} state Vuex app state.
  * @param {object} querySnapshot
  */
-const setAccounts = (state, querySnapshot) => {
+export const setAccounts = (state, querySnapshot) => {
   let list = {}
   querySnapshot.forEach(function (doc) {
     list[doc.id] = {
@@ -210,7 +218,7 @@ const setAccounts = (state, querySnapshot) => {
  * @param {object} state Vuex app state.
  * @param {object} account
  */
-const setMe = (state, account) => {
+export const setMe = (state, account) => {
   if (account && account.uid) {
     state.me = {
       uid: account.uid,
@@ -219,20 +227,4 @@ const setMe = (state, account) => {
   } else {
     state.me = {}
   }
-}
-
-export default {
-  setPage,
-  backPage,
-  setLoadingMessage,
-  selectUser,
-  selectEvent,
-  setResources,
-  setMemberships,
-  setBranches,
-  setEvents,
-  setUsers,
-  setAccount,
-  setAccounts,
-  setMe
 }

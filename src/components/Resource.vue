@@ -1,7 +1,7 @@
 <template>
   <div>
     <h2><v-icon dark>message</v-icon> {{ res.titleResources }}</h2>
-    <v-card color="grey lighten-3">
+    <v-card color="COLOR.CARD">
       <v-card-text>
         <div v-for="(text, index) in res.guideAdminResource" v-bind:key="index">
           {{ text }}
@@ -26,7 +26,8 @@
 </template>
 
 <script>
-import {BACK_PAGE, DB_RESOURCES, getFirestore} from '../common'
+import {mapGetters} from 'vuex'
+import {M, DB, GETTERS} from '../constants'
 import {onSubmitList} from '../handlers'
 
 const isArray = arr => Object.prototype.toString.call(arr) === '[object Array]'
@@ -51,11 +52,11 @@ export default {
       try {
         this.submitted = true
         await onSubmitList(
-          getFirestore(this.$store.state.firebase).collection(DB_RESOURCES),
+          this.collection(DB.RESOURCES),
           this.list,
           true
         )
-        this.$store.commit(BACK_PAGE)
+        this.$store.commit(M.BACK_PAGE)
         window.scrollTo({top: 0})
       } catch (error) {
         window.alert(error)
@@ -63,9 +64,7 @@ export default {
     }
   },
   computed: {
-    res () {
-      return this.$store.state.resources
-    }
+    ...mapGetters(GETTERS)
   }
 }
 </script>

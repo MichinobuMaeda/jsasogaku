@@ -2,39 +2,39 @@
   <div>
     <div
       v-if="me && accounts[me.uid] && accounts[me.uid].admin"
-    >{{ user.uid }}</div>
-    <div>{{ user.name }}</div>
+    >{{ activeUser.uid }}</div>
+    <div>{{ activeUser.name }}</div>
     <div><v-icon>people_outline</v-icon> {{
       $store.state.memberships.reduce(
-        (ret, cur) => cur.key === user.membership ? cur.text : ret,
+        (ret, cur) => cur.key === activeUser.membership ? cur.text : ret,
         ''
       )
     }}
     &nbsp;
     <v-icon>people</v-icon> {{
       $store.state.branches.reduce(
-      (ret, cur) => cur.key === user.branch ? cur.text : ret,
+      (ret, cur) => cur.key === activeUser.branch ? cur.text : ret,
         ''
       )
     }}</div>
-    <div :class="lightgrey">〒{{ user.zip }}</div>
-    <div :class="lightgrey">{{ user.pref }} {{ user.city }}</div>
-    <div :class="lightgrey">{{ user.street }}</div>
-    <div :class="lightgrey">{{ user.bldg }}</div>
-    <div v-if="user.email">
-      <v-icon>email</v-icon> {{ user.email }}
+    <div :class="COLOR.CARD">〒{{ activeUser.zip }}</div>
+    <div :class="COLOR.CARD">{{ activeUser.pref }} {{ activeUser.city }}</div>
+    <div :class="COLOR.CARD">{{ activeUser.street }}</div>
+    <div :class="COLOR.CARD">{{ activeUser.bldg }}</div>
+    <div v-if="activeUser.email">
+      <v-icon>email</v-icon> {{ activeUser.email }}
     </div>
-    <div v-if="user.tel">
+    <div v-if="activeUser.tel">
       <v-icon>phone</v-icon>
-      {{ user.tel }}
+      {{ activeUser.tel }}
     </div>
-    <div v-if="user.fax">
-      Fax {{ user.fax }}
+    <div v-if="activeUser.fax">
+      Fax {{ activeUser.fax }}
     </div>
     <div
-      v-if="user.note"
-      :class="lightgrey"
-      v-for="(value, index) in user.note.split('\n')"
+      v-if="activeUser.note"
+      :class="COLOR.CARD"
+      v-for="(value, index) in activeUser.note.split('\n')"
       v-bind:key="index"
     >
       {{ value || '&nbsp;' }}
@@ -46,33 +46,17 @@
 </style>
 
 <script>
+import {mapGetters} from 'vuex'
+import {GETTERS} from '../constants'
 
 export default {
   data () {
-    return {
-    }
+    return {}
   },
   methods: {
   },
   computed: {
-    res () {
-      return this.$store.state.resources
-    },
-    accounts () {
-      return this.$store.state.accounts
-    },
-    user () {
-      return this.$store.state.users.reduce(
-        (ret, cur) => cur.key === this.$store.state.site.activeUser ? cur : ret,
-        null
-      )
-    },
-    me () {
-      return this.$store.state.me
-    },
-    lightgrey () {
-      return 'grey lighten-3'
-    }
+    ...mapGetters(GETTERS)
   }
 }
 </script>

@@ -210,10 +210,9 @@ table {
 </style>
 
 <script>
+import {mapGetters} from 'vuex'
 import CookieLaw from 'vue-cookie-law'
-import {
-  PAGE, SET_PAGE, BACK_PAGE
-} from './common'
+import {PAGE, M, GETTERS} from './constants'
 import Loading from './components/Loading'
 import SignIn from './components/SignIn'
 import MainForm from './components/MainForm'
@@ -276,7 +275,7 @@ export default {
   methods: {
     cancel () {
       this.canceled = true
-      this.$store.commit(BACK_PAGE)
+      this.$store.commit(M.BACK_PAGE)
       window.scrollTo({top: 0})
     },
     signOut () {
@@ -297,9 +296,9 @@ export default {
     },
     adminPageOnOff (page) {
       if (this.page !== page) {
-        this.$store.commit(SET_PAGE, page)
+        this.$store.commit(M.SET_PAGE, page)
       } else {
-        this.$store.commit(BACK_PAGE)
+        this.$store.commit(M.BACK_PAGE)
       }
       this.rightDrawer = false
       window.scrollTo({top: 0})
@@ -326,18 +325,7 @@ export default {
     Debug
   },
   computed: {
-    res () {
-      return this.$store.state.resources
-    },
-    page () {
-      return this.$store.state.site.page
-    },
-    accounts () {
-      return this.$store.state.accounts
-    },
-    me () {
-      return this.$store.state.me
-    },
+    ...mapGetters(GETTERS),
     showMenuButton () {
       return !this.rightDrawer && (
         this.$store.state.site.page === PAGE.MAIN_FORM ||

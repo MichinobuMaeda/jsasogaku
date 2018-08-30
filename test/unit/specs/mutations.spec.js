@@ -1,4 +1,4 @@
-import mutations from '@/mutations'
+import {setMe} from '@/store/mutations'
 
 // const createDoc = obj => {
 //   let {key, ...doc} = obj
@@ -31,14 +31,14 @@ describe('setMe', () => {
   it('should set the account signed in.', () => {
     {
       let state = {}
-      mutations.setMe(state, null)
+      setMe(state, null)
       expect(state).toEqual({
         me: {}
       })
     }
     {
       let state = {}
-      mutations.setMe(state, {
+      setMe(state, {
         uid: 'uid001',
         email: 'aaa@bbb.ccc',
         other: 'dummy'
@@ -52,7 +52,7 @@ describe('setMe', () => {
     }
     {
       let state = {}
-      mutations.setMe(state, {
+      setMe(state, {
         email: 'aaa@bbb.ccc'
       })
       expect(state).toEqual({
@@ -61,7 +61,7 @@ describe('setMe', () => {
     }
     {
       let state = {}
-      mutations.setMe(state, {
+      setMe(state, {
         uid: 'uid001'
       })
       expect(state).toEqual({

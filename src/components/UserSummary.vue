@@ -1,13 +1,13 @@
 <template>
   <table
-    v-if="summary"
+    v-if="summary(activeUser.key, activeEvent.key)"
   >
     <tr>
       <th colspan="2">{{ res.labelUserSumName }}</th>
       <th>{{ res.labelUserSumPrice }}</th>
     </tr>
     <tr
-      v-for="item in summary.items"
+      v-for="item in summary(activeUser.key, activeEvent.key).items"
       v-bind:key="item.key"
     >
       <td>{{ item.key }}</td>
@@ -20,7 +20,7 @@
     </tr>
     <tr>
       <th colspan="2">{{ res.labelUserSumTotal }}</th>
-      <td class="num">{{ summary.total.toLocaleString() }}</td>
+      <td class="num">{{ summary(activeUser.key, activeEvent.key).total.toLocaleString() }}</td>
     </tr>
   </table>
   <div
@@ -42,7 +42,8 @@ td.num {
 </style>
 
 <script>
-import {getSummaryTable} from '../common'
+import {mapGetters} from 'vuex'
+import {GETTERS} from '../constants'
 
 export default {
   data () {
@@ -52,12 +53,7 @@ export default {
   methods: {
   },
   computed: {
-    res () {
-      return this.$store.state.resources
-    },
-    summary () {
-      return getSummaryTable(this.$store.state)
-    }
+    ...mapGetters(GETTERS)
   }
 }
 </script>

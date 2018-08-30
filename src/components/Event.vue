@@ -166,7 +166,8 @@
 
 
 <script>
-import {DB_EVENTS, BACK_PAGE, REGEX_INTEGER, getFirestore} from '../common'
+import {mapGetters} from 'vuex'
+import {M, DB, GETTERS, REGEX} from '../constants'
 import {onSubmitEvents} from '../handlers'
 
 export default {
@@ -184,7 +185,7 @@ export default {
       ],
       numberRules: [
         v => !!v || this.res.validationRequired,
-        v => REGEX_INTEGER.test(v) || this.res.validationInteger
+        v => REGEX.INTEGER.test(v) || this.res.validationInteger
       ],
       eventStatus: [
         {text: 'active'},
@@ -203,11 +204,11 @@ export default {
       try {
         this.submitted = true
         await onSubmitEvents(
-          getFirestore(this.$store.state.firebase).collection(DB_EVENTS),
+          this.collection(DB.EVENTS),
           this.list.reduce((ret, cur) => cur.key === key ? cur : ret, null),
           this.$store.state.memberships
         )
-        this.$store.commit(BACK_PAGE)
+        this.$store.commit(M.BACK_PAGE)
         window.scrollTo({top: 0})
       } catch (error) {
         window.alert(error)
@@ -215,12 +216,7 @@ export default {
     }
   },
   computed: {
-    res () {
-      return this.$store.state.resources
-    },
-    memberships () {
-      return this.$store.state.memberships
-    }
+    ...mapGetters(GETTERS)
   }
 }
 </script>

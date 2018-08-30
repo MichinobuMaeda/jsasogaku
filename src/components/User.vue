@@ -1,7 +1,7 @@
 <template>
   <div>
     <h2><v-icon dark>face</v-icon> {{ res.titleUserList }}</h2>
-    <v-card color="grey lighten-3">
+    <v-card color="COLOR.CARD">
       <v-card-text>
         <div v-for="(text, index) in res.guideAdminUser" v-bind:key="index">
           {{ text }}
@@ -58,7 +58,8 @@ td.account-id {
 </style>
 
 <script>
-import {SET_PAGE, PAGE, SELECT_USER} from '../common'
+import {mapGetters} from 'vuex'
+import {M, PAGE, GETTERS} from '../constants'
 // import {onSubmitAccounts} from '../handlers'
 
 export default {
@@ -73,25 +74,17 @@ export default {
   },
   methods: {
     edit (key) {
-      this.$store.commit(SELECT_USER, key)
+      this.$store.commit(M.SELECT_USER, key)
       if (key) {
-        this.$store.commit(SET_PAGE, PAGE.USER_SHOW)
+        this.$store.commit(M.SET_PAGE, PAGE.USER_SHOW)
       } else {
-        this.$store.commit(SET_PAGE, PAGE.USER_EDIT)
+        this.$store.commit(M.SET_PAGE, PAGE.USER_EDIT)
       }
       window.scrollTo({top: 0})
     }
   },
   computed: {
-    res () {
-      return this.$store.state.resources
-    },
-    memberships () {
-      return this.$store.state.memberships
-    },
-    branches () {
-      return this.$store.state.branches
-    }
+    ...mapGetters(GETTERS)
   }
 }
 </script>

@@ -73,9 +73,8 @@
 </template>
 
 <script>
-import {
-  EMAIL_FOR_SIGN_IN, REGEX_EMAIL
-} from '../common'
+import {mapGetters} from 'vuex'
+import {EMAIL_FOR_SIGN_IN, REGEX, GETTERS} from '../constants'
 
 export default {
   data () {
@@ -85,7 +84,7 @@ export default {
       email: '',
       emailRules: [
         v => !!v || this.res.validationRequired,
-        v => REGEX_EMAIL.test(v) ||
+        v => REGEX.EMAIL.test(v) ||
             this.res.validationEmailFormat
       ],
       password: '',
@@ -158,9 +157,7 @@ export default {
     }
   },
   computed: {
-    res () {
-      return this.$store.state.resources
-    }
+    ...mapGetters(GETTERS)
   }
 }
 </script>

@@ -1,7 +1,7 @@
 <template>
   <div>
     <h2><v-icon dark>account_circle</v-icon> {{ res.titleAccounts }}</h2>
-    <v-card color="grey lighten-3">
+    <v-card color="COLOR.CARD">
       <v-card-text>
         <div v-for="(text, index) in res.guideAdminAccount" v-bind:key="index">
           {{ text }}
@@ -54,7 +54,7 @@
             v-for="user in users.filter(user => user.uid === item.key)"
             v-bind:key="user.key"
           >
-            {{ memberships.reduce((ret, cur) => cur.key === user.membership ? cur.text : ret, null) }}
+            {{ membership(user.membership) }}
           </div>
         </td>
         <td>
@@ -62,7 +62,7 @@
             v-for="user in users.filter(user => user.uid === item.key)"
             v-bind:key="user.key"
           >
-            {{ branches.reduce((ret, cur) => cur.key === user.branch ? cur.text : ret, null) }}
+            {{ branch(user.branch) }}
           </div>
         </td>
       </tr>
@@ -95,7 +95,8 @@ td.account-id {
 </style>
 
 <script>
-import {BACK_PAGE, DB_ACCOUNTS, getFirestore} from '../common'
+import {mapGetters} from 'vuex'
+import {M, DB, GETTERS} from '../constants'
 import {onSubmitAccounts} from '../handlers'
 
 export default {
@@ -125,10 +126,10 @@ export default {
       try {
         this.submitted = true
         await onSubmitAccounts(
-          getFirestore(this.$store.state.firebase).collection(DB_ACCOUNTS),
+          this.collection(DB.ACCOUNTS),
           this.list
         )
-        this.$store.commit(BACK_PAGE)
+        this.$store.commit(M.BACK_PAGE)
         window.scrollTo({top: 0})
       } catch (error) {
         window.alert(error)
@@ -136,18 +137,7 @@ export default {
     }
   },
   computed: {
-    res () {
-      return this.$store.state.resources
-    },
-    memberships () {
-      return this.$store.state.memberships
-    },
-    branches () {
-      return this.$store.state.branches
-    },
-    users () {
-      return this.$store.state.users
-    }
+    ...mapGetters(GETTERS)
   }
 }
 </script>

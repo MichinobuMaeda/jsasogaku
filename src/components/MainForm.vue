@@ -16,7 +16,7 @@
     <div class="summary">
       {{ res.labelReceiptNo }}
       <span class="big-number"> {{
-        selectedUserEvent.number
+        selectedUserEvent(user).number
       }}</span>
     </div>
     <v-form
@@ -24,7 +24,7 @@
       ref="entry"
     >
       <v-radio-group
-        v-model="selectedUserEvent.entry"
+        v-model="selectedUserEvent(user).entry"
       >
         <v-radio
           :label="res.labelEntryOn"
@@ -36,9 +36,9 @@
         ></v-radio>
       </v-radio-group>
       <div
-        v-if="selectedUserEvent.entry"
+        v-if="selectedUserEvent(user).entry"
       >
-        <v-card :color="lightgrey">
+        <v-card :color="COLOR.CARD">
           <v-card-text>
             <div v-for="(text, index) in res.guideEventEntry" v-bind:key="index">
               {{ text }}
@@ -57,8 +57,8 @@
           </h5>
           <v-radio-group
             v-if="item.list"
-            v-model="selectedUserEvent.items[item.key]"
-            :error="!selectedUserEvent.items[item.key]"
+            v-model="selectedUserEvent(user).items[item.key]"
+            :error="!selectedUserEvent(user).items[item.key]"
             :rules="requiredRules"
           >
             <v-radio
@@ -73,7 +73,7 @@
           >
             <v-text-field
               :label="item.key + ': ' + item.name"
-              v-model="selectedUserEvent.items[item.key]"
+              v-model="selectedUserEvent(user).items[item.key]"
             ></v-text-field>
           </div>
           <div
@@ -81,18 +81,18 @@
           >
             <v-checkbox
               :label="item.key + ': ' + item.name + (item[user.membership] ? ' ¥' + item[user.membership].toLocaleString() : '')"
-              v-model="selectedUserEvent.items[item.key]"
+              v-model="selectedUserEvent(user).items[item.key]"
             ></v-checkbox>
           </div>
         </div>
         <div>{{ res.guideEventNote }}</div>
         <v-text-field
           :label="res.labelEventNote"
-          v-model="selectedUserEvent.note"
+          v-model="selectedUserEvent(user).note"
           :multi-line="true"
         ></v-text-field>
         <h4>{{ res.titleLectureEntry }}</h4>
-        <v-card :color="lightgrey">
+        <v-card :color="COLOR.CARD">
           <v-card-text>
             <div v-for="(text, index) in res.guideLectureEntry" v-bind:key="index">
               {{ text }}
@@ -100,11 +100,11 @@
           </v-card-text>
           <v-card-text>
             <div>{{ res.labelLectureEntryCount }} [ {{
-              Object.keys(selectedUserEvent.items).reduce(
+              Object.keys(selectedUserEvent(user).items).reduce(
                 (ret1, cur1) => activeEvent.items.reduce(
                   (ret2, cur2) => cur2.key === cur1 &&
                     cur2.category === 'lecture' &&
-                    selectedUserEvent.items[cur1]
+                    selectedUserEvent(user).items[cur1]
                       ? true : ret2, false
                 ) ? ++ret1 : ret1, 0
               )
@@ -118,11 +118,11 @@
         >
           <v-checkbox
             :label="item.key + ': ' + item.name"
-            v-model="selectedUserEvent.items[item.key]"
+            v-model="selectedUserEvent(user).items[item.key]"
           ></v-checkbox>
         </div>
         <h4>{{ res.titleExcursion }}</h4>
-        <v-card :color="lightgrey">
+        <v-card :color="COLOR.CARD">
           <v-card-text>
             <div v-for="(text, index) in res.guideExcursion" v-bind:key="index">
               {{ text }}
@@ -136,7 +136,7 @@
         >
           <v-checkbox
             :label="item.key + ': ' + item.name + (item[user.membership] ? ' ¥' + item[user.membership].toLocaleString() : '')"
-            v-model="selectedUserEvent.items[item.key]"
+            v-model="selectedUserEvent(user).items[item.key]"
           ></v-checkbox>
         </div>
       </div>
@@ -150,7 +150,7 @@
       <v-btn
         v-if="user.ver"
         @click="reset"
-        :disabled="!entryValid || !selectedUserEvent.summary"
+        :disabled="!entryValid || !selectedUserEvent(user).summary"
       >
         {{ res.labelCancel }}
       </v-btn>
@@ -187,38 +187,32 @@ h5 {
 </style>
 
 <script>
-import {
-  SET_PAGE, PAGE, EXCEPTION_CONFLICT, EXCEPTION_DELETED, DB_USERS,
-  getActiveEvent, getUserForEdit, updateUserSummary, getFirestore
-} from '../common'
+import {mapGetters} from 'vuex'
+import {M, PAGE, EXCEPTION, DB, GETTERS} from '../constants'
 import {onSubmitUser} from '../handlers'
+import {userForEdit} from '../common'
 import UserProfile from './UserProfile'
 
 export default {
   data () {
     return {
+      user: userForEdit(this.$store.state),
       entryValid: false,
       requiredRules: [
         v => !!v || this.res.validationRequired
-      ],
-      user: getUserForEdit(this.$store.state)
+      ]
     }
   },
   methods: {
     async submit () {
       try {
-        let db = getFirestore(this.$store.state.firebase)
-        let collection = db.collection(DB_USERS)
-        await onSubmitUser(
-          collection,
-          updateUserSummary(this.$store.state, this.user)
-        )
-        this.$store.commit(SET_PAGE, PAGE.USER_SHOW)
+        await onSubmitUser(this.collection(DB.USERS), this.$store.state, this.user)
+        this.$store.commit(M.SET_PAGE, PAGE.USER_SHOW)
       } catch (error) {
         if (error.code === 'permission-denied' ||
-            error.name === EXCEPTION_DELETED.name) {
+            error.name === EXCEPTION.DELETED.name) {
           window.alert(this.$store.state.resources.errorConflictDeleted)
-        } else if (error.name === EXCEPTION_CONFLICT.name) {
+        } else if (error.name === EXCEPTION.CONFLICT.name) {
           window.alert(this.$store.state.resources.errorConflictUpdated)
         } else {
           window.alert(error)
@@ -227,7 +221,7 @@ export default {
       }
     },
     reset () {
-      this.$store.commit(SET_PAGE, PAGE.USER_SHOW)
+      this.$store.commit(M.SET_PAGE, PAGE.USER_SHOW)
       window.scrollTo({top: 0, behavior: 'smooth'})
     }
   },
@@ -235,30 +229,7 @@ export default {
     UserProfile
   },
   computed: {
-    res () {
-      return this.$store.state.resources
-    },
-    accounts () {
-      return this.$store.state.accounts
-    },
-    users () {
-      return this.$store.state.users
-    },
-    me () {
-      return this.$store.state.me
-    },
-    activeEvent () {
-      return getActiveEvent(this.$store.state)
-    },
-    selectedUserEvent () {
-      return this.user.events[this.$store.state.site.activeEvent]
-    },
-    colorinfo () {
-      return 'brown'
-    },
-    lightgrey () {
-      return 'grey lighten-3'
-    }
+    ...mapGetters(GETTERS)
   }
 }
 </script>

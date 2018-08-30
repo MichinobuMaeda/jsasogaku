@@ -1,6 +1,5 @@
-import {
-  EXCEPTION_CONFLICT, EXCEPTION_DELETED, createEventData
-} from './common'
+import {EXCEPTION} from './constants'
+import {getValue} from './common'
 
 /**
  * Submit edited accounts.
@@ -44,6 +43,31 @@ export const onSubmitList = async (collection, list, permitEmpty = false) => {
   return Promise.all(tasks)
 }
 
+const createEventData = (data, memberships) => ({
+  ...data,
+  items: data.items.reduce((ret, cur) => {
+    let {key, ...item} = cur
+    item.category = item.category.trim()
+    item.default = getValue(('' + item.default).trim())
+    if (item.list) {
+      item.list = item.list.map(listItem => {
+        listItem.name = listItem.name.trim()
+        memberships.forEach(m => {
+          listItem[m.key] = getValue(listItem[m.key] || '0')
+        })
+        return listItem
+      })
+    } else {
+      item.name = item.name.trim()
+      memberships.forEach(m => {
+        item[m.key] = getValue(item[m.key] || 0)
+      })
+    }
+    ret[key.trim()] = item
+    return ret
+  }, {})
+})
+
 /**
  * Submit edited text list.
  * @param {object} collection the collection of Firestore.
@@ -77,13 +101,72 @@ export const onSubmitNewUser = async (collection, editedUser) => {
   return docRef.id
 }
 
+export const getSummary = (state, user) => {
+  let ret = {items: [], total: 0}
+  if (!state.site.activeEvent) { return ret }
+  let event = state.events.reduce(
+    (ret, cur) => cur.key === state.site.activeEvent ? cur : ret,
+    {}
+  )
+  if (!event) { return ret }
+  let entry = user.events[state.site.activeEvent]
+  if (!entry) { return ret }
+  if (!entry.number) { return ret }
+  if (!entry.entry) { return ret }
+  const categories = ['GA', 'lecture', 'excursion']
+  categories.forEach(section => {
+    ret.items = [
+      ...ret.items,
+      ...event.items.filter(item => item.category === section && entry.items[item.key])
+        .map(item => {
+          let cost = getValue(
+            entry.items[item.key]
+              ? Array.isArray(item.list)
+                ? item.list[entry.items[item.key] - 1][user.membership] || 0
+                : (item[user.membership] || 0)
+              : 0
+          )
+          ret.total += cost
+          return {
+            key: item.key,
+            value: entry.items[item.key],
+            cost
+          }
+        }
+      )
+    ]
+  })
+  return ret
+}
+
+// Recalc the sum.
+export const updateUserSummary = (state, user) => {
+  const timestamp = new Date()
+  return user.events[state.site.activeEvent]
+    ? {
+      ...user,
+      events: {
+        ...user.events,
+        [state.site.activeEvent]: {
+          number: user.events[state.site.activeEvent].number,
+          summary: (user.events[state.site.activeEvent].entry
+            ? getSummary(state, user)
+            : null),
+          createdAt: user.events[state.site.activeEvent].createdAt || timestamp,
+          updatedAt: timestamp
+        }
+      }
+    }
+    : user
+}
+
 /**
  * Submit edited user.
  * @param {object} collection the users collection of Firestore.
  * @param {object} editedUser
  */
-export const onSubmitUser = async (collection, editedUser) => {
-  const {key, ...user} = editedUser
+export const onSubmitUser = async (collection, state, editedUser) => {
+  const {key, ...user} = updateUserSummary(state, editedUser)
   const timestamp = new Date()
 
   // Get the saved user date.
@@ -95,7 +178,7 @@ export const onSubmitUser = async (collection, editedUser) => {
     if (doc.exists) {
       // If the version of user data is invalid.
       if (doc.data().ver !== user.ver) {
-        throw EXCEPTION_CONFLICT
+        throw EXCEPTION.CONFLICT
 
       // If the version of user data is valid.
       } else {
@@ -111,7 +194,7 @@ export const onSubmitUser = async (collection, editedUser) => {
 
     // If the user data is not exists.
     } else {
-      throw EXCEPTION_DELETED
+      throw EXCEPTION.DELETED
     }
   })
 }
