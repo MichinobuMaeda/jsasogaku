@@ -26,6 +26,7 @@
           <div slot="header">{{ res.labelAcceptsSummary }}</div>
           <table>
             <tr>
+              <th>{{ res.labelReceiptNo }}</th>
               <th>{{ res.labelBranch }}</th>
               <th>{{ res.labelMembership }}</th>
               <th>{{ res.labelUserName }}</th>
@@ -41,6 +42,7 @@
               v-for="user in costSummaryList.list"
               v-bind:key="user.key"
             >
+              <td class="num">{{ user.events[activeEvent.key].number }}</td>
               <td>{{ branch(user.branch) }}</td>
               <td>{{ membership(user.membership) }}</td>
               <td>{{ user.name }}</td>
@@ -58,7 +60,7 @@
               </td>
             </tr>
             <tr>
-              <th colspan="3">{{ res.labelSumTotal }}</th>
+              <th colspan="4">{{ res.labelSumTotal }}</th>
               <td
                 class="num"
                 v-for="(item, index) in costSummaryList.items"
@@ -78,6 +80,7 @@
           <div slot="header">{{ res.titleLectureEntry }}</div>
           <table>
             <tr>
+              <th>{{ res.labelReceiptNo }}</th>
               <th>{{ res.labelBranch }}</th>
               <th>{{ res.labelMembership }}</th>
               <th>{{ res.labelUserName }}</th>
@@ -95,6 +98,7 @@
               v-for="user in lectureSummaryList.list"
               v-bind:key="user.key"
             >
+              <td class="num">{{ user.events[activeEvent.key].number }}</td>
               <td>{{ branch(user.branch) }}</td>
               <td>{{ membership(user.membership) }}</td>
               <td>{{ user.name }}</td>
@@ -136,6 +140,7 @@
           <div style="display: none;">{{ seq = 0 }}</div>
           <table>
             <tr>
+              <th>{{ res.labelReceiptNo }}</th>
               <th>{{ res.labelBranch }}</th>
               <th>{{ res.labelMembership }}</th>
               <th>{{ res.labelUserName }}</th>
@@ -154,6 +159,7 @@
                       (ret, cur) => cur.key === item.key ? true : ret, false
                     )"
             >
+              <td class="num">{{ user.events[activeEvent.key].number }}</td>
               <td>{{ branch(user.branch) }}</td>
               <td>{{ membership(user.membership) }}</td>
               <td>{{ user.name }}</td>

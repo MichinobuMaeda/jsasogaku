@@ -23,13 +23,16 @@
     >
       {{ res.labelEdit }}
     </v-btn>
-        <v-card :color="COLOR.CARD">
-          <v-card-text>
-            <div v-for="(text, index) in res.guideRegistered" v-bind:key="index">
-              {{ text }}
-            </div>
-          </v-card-text>
-        </v-card>
+    <v-card
+      :color="COLOR.CARD"
+      v-if="activeUser.uid === me.uid"
+    >
+      <v-card-text>
+        <div v-for="(text, index) in res.guideRegistered" v-bind:key="index">
+          {{ text }}
+        </div>
+      </v-card-text>
+    </v-card>
     <div
       v-if="!accounts[me.uid].admin"
     >

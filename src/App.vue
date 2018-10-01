@@ -43,6 +43,7 @@
         <UserEdit v-if="page === PAGE.USER_EDIT"/>
         <UserShow v-if="page === PAGE.USER_SHOW"/>
         <Summary v-if="page === PAGE.SUMMARY"/>
+        <Collection v-if="page === PAGE.COLLECTION"/>
         <User v-if="page === PAGE.USER"/>
         <Account v-if="page === PAGE.ACCOUNT"/>
         <Event v-if="page === PAGE.EVENT"/>
@@ -219,6 +220,7 @@ import MainForm from './components/MainForm'
 import UserEdit from './components/UserEdit'
 import UserShow from './components/UserShow'
 import Summary from './components/Summary'
+import Collection from './components/Collection'
 import User from './components/User'
 import Account from './components/Account'
 import Event from './components/Event'
@@ -238,6 +240,11 @@ export default {
           title: 'titleSummary',
           icon: 'list',
           page: PAGE.SUMMARY
+        },
+        {
+          title: 'titleCollection',
+          icon: 'payment',
+          page: PAGE.COLLECTION
         },
         {
           title: 'titleUserList',
@@ -315,6 +322,7 @@ export default {
     MainForm,
     UserEdit,
     UserShow,
+    Collection,
     Summary,
     User,
     Account,

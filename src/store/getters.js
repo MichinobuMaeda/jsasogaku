@@ -109,7 +109,8 @@ export const costSummaryList = (state, getters) => {
           : ret,
         {}
       ),
-      total: user.events[state.site.activeEvent].summary.total
+      total: user.events[state.site.activeEvent].summary.total,
+      payment: (user.events[state.site.activeEvent].payment || 0)
     }))
   const summary = list.reduce(
     (ret, cur) => {

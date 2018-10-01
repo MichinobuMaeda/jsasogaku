@@ -160,6 +160,37 @@ export const updateUserSummary = (state, user) => {
     : user
 }
 
+// Update the payment of tye user of the event.
+export const updateUserPayment = async (collection, user, event, payment) => {
+  const timestamp = new Date()
+  let docRef = collection.doc(user.key)
+  await collection.firestore.runTransaction(async transaction => {
+    let doc = await transaction.get(docRef)
+    // If the user data restored.
+    if (doc.exists) {
+      if (doc.data().ver !== user.ver) {
+        throw EXCEPTION.CONFLICT
+
+      // If the version of user data is valid.
+      } else {
+        // Update the user data
+        let events = doc.data().events
+        events[event.key].payment = getValue(payment)
+        events[event.key].updatedAt = timestamp
+        await transaction.update(docRef, {
+          events,
+          ver: doc.data().ver + 1,
+          updatedAt: timestamp
+        })
+      }
+
+      // If the user data is not exists.
+    } else {
+      throw EXCEPTION.DELETED
+    }
+  })
+}
+
 /**
  * Submit edited user.
  * @param {object} collection the users collection of Firestore.

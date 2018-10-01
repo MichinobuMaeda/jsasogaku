@@ -78,6 +78,7 @@ export const PAGE = {
   USER_EDIT: 'UserEdit',
   USER_SHOW: 'UserShow',
   SUMMARY: 'Summary',
+  COLLECTION: 'Collection',
   USER: 'User',
   ACCOUNT: 'Account',
   EVENT: 'Event',

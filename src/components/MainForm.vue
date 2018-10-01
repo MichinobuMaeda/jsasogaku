@@ -137,6 +137,8 @@
           <v-checkbox
             :label="item.key + ': ' + item.name + (item[user.membership] ? ' ¥' + item[user.membership].toLocaleString() : '')"
             v-model="selectedUserEvent(user).items[item.key]"
+            :readonly="item.name.match('【.*】') && (!accounts[me.uid].admin)"
+            :disabled="item.name.match('【.*】') && (!accounts[me.uid].admin)"
           ></v-checkbox>
         </div>
       </div>
